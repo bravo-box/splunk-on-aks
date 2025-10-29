@@ -18,6 +18,10 @@ SPLUNK_IMAGE="${SPLUNK_IMAGE:-docker.io/splunk/splunk:9.4.5}"
 OPERATOR_IMAGE="${OPERATOR_IMAGE:-docker.io/splunk/splunk-operator:3.0.0}"
 MY_IP=$(curl -s https://ifconfig.me | awk '{print $1}')
 
+# Extract the part after the registry (e.g. "splunk/splunk:9.4.5" or "splunk/splunk-operator:3.0.0")
+SPLUNK_TAG="${SPLUNK_IMAGE#*/}"  # Removes first part before first "/"
+OPERATOR_TAG="${OPERATOR_IMAGE#*/}"  # Removes first part before first "/"
+
 
 echo "----------------------------------------------"
 echo " Azure Subscription Deployment Script"
@@ -308,6 +312,17 @@ fi
       read -rp "Entra ID Group Object ID cannot be empty. Please enter the Group Object ID: " ADMIN_GROUP_ID
     done 
 
+    # Enter the Cost Center tag value
+    read -rp "Enter your Cost Center (e.g., 12345, leave blank for n/a): " COST_CENTER
+    COST_CENTER=${COST_CENTER:-n/a}
+    echo "Cost Center set to: $COST_CENTER"
+
+    # Enter the Environment tag value
+    read -rp "Enter your Environment tag value (e.g., Dev, Test, Prod): " ENVIRONMENT
+    ENVIRONMENT=${ENVIRONMENT:-n/a}
+    echo "ENVIRONMENT set to: $ENVIRONMENT"
+
+
     echo "Getting parameters for ARM template..."
     echo "  ↳ Created By:           $CREATED_BY"
     echo "  ↳ Project Name:         $PROJECT_NAME"
@@ -392,14 +407,11 @@ cat > infra.parameters.json <<EOF
     "\$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "location": { "value": "$LOCATION" },
-        "projectName": { "value": "$PROJECT_NAME" },
+        "location": { "value": "${LOCATION}" },
+        "projectName": { "value": "${PROJECT_NAME}" },
         "createdbyTag": { "value": "${CREATED_BY}" },
-        "costcenter": { "value": "12345" },
-        "Service": { "value": "security" },
-        "CostCategory": { "value": "application" },
-        "Env": { "value": "Prod" },
-        "BillingId": { "value": "someid" },
+        "costcenter": { "value": "${COST_CENTER}" },
+        "Env": { "value": "${ENVIRONMENT}" },
         "adminUsername": {
             "metadata": { "description": "Admin username for the jumpboxes. Must be between 1 and 20 characters long." },
             "value": "$ADMIN_NAME"
@@ -428,22 +440,6 @@ cat > infra.parameters.json <<EOF
             "metadata": { "description": "Enter the DNS prefix for the AKS Cluster." },
             "value": "$PROJECT_NAME"
         },
-        "deployRoutes": {
-            "metadata": { "description": "Deploy custom routes to the new Subnet, yes or no" },
-            "value": "no"
-        },
-        "routeDefinitions": {
-            "value": [
-                {
-                    "name": "External",
-                    "properties": {
-                        "addressPrefix": "0.0.0.0/0",
-                        "nextHopType": "VirtualAppliance",
-                        "nextHopIpAddress": "1.2.3.4"
-                    }
-                }
-            ]
-        },
         "keyVaultName": {
             "metadata": { "description": "Key Vault Name to store secrets" },
             "value": "$KV_NAME"
@@ -464,22 +460,6 @@ cat > infra.parameters.json <<EOF
             "metadata": { "description": "Enable Key Vault access via public endpoint or private endpoint" },
             "value": "Public"
         },
-        "entraIDEnabled": {
-            "metadata": { "description": "Enable Entra ID integration with your AKS Cluster, True or False" },
-            "value": true
-        },
-        "fipsEnabled": {
-            "metadata": { "description": "Enable FIPS on your node pool, True or False" },
-            "value": true
-        },
-        "deployACR": {
-            "metadata": { "description": "Deploy an Azure Container Registry (ACR) along with the AKS Cluster" },
-            "value": "yes"
-        },
-        "deployNsgRT": {
-            "metadata": { "description": "Deploy NSG and Route Table to the new Subnet" },
-            "value": "yes"
-        },
         "adminGroupObjectIDs": {
             "metadata": { "description": "Entra ID Group Object IDs that will be assigned as AKS Admins" },
             "value": "$ADMIN_GROUP_ID"
@@ -494,7 +474,9 @@ EOF
 
 PARAM_FILE="$(pwd)/infra.parameters.json"
 
+echo "----------------------------------------------"
 echo "✅ Parameters file created: $PARAM_FILE"
+echo "----------------------------------------------"
 echo
 
 # --- DEPLOY ARM TEMPLATE USING GENERATED PARAMETERS FILE ---
@@ -506,7 +488,9 @@ az deployment sub create \
   --template-file "$TEMPLATE_FILE" \
   --parameters @"$PARAM_FILE"
 
+echo "----------------------------------------------"
 echo "✅ ARM deployment completed: $DEPLOYMENT_NAME"
+echo "----------------------------------------------"
 
 # Assign Network Contributor role to UAMI for AKS Ingress deployments
 echo "Assigning network role to the UAMI for AKS Ingress deployments..."
@@ -524,7 +508,9 @@ echo "Assigning network role to the UAMI for AKS Ingress deployments..."
     --role "Network Contributor" \
     --scope "$SUBNET_ID"
 
+    echo "----------------------------------------------"
     echo "  ✅ Assigned 'Network Contributor' on $PROJECT_NAME-aks-snet"
+    echo "----------------------------------------------"
 
 # Assign ACR Pull role to UAMI for AKS ACR access
 echo "Assigning ACR Pull role to the UAMI for AKS ACR access..."
@@ -539,7 +525,9 @@ echo "Assigning ACR Pull role to the UAMI for AKS ACR access..."
     --role "AcrPull" \
     --scope "$ACR_ID"
 
+    echo "----------------------------------------------"
     echo "  ✅ Assigned 'AcrPull' on $ACR_NAME"
+    echo "----------------------------------------------"
 
 # Assign ACR Push and Pull role for current signed in user
 echo "Assigning ACR Push role to the current user for AKS ACR access..."
@@ -553,7 +541,9 @@ echo "Assigning ACR Push role to the current user for AKS ACR access..."
       --role "AcrPush" \
       --scope "$ACR_ID"
 
+    echo "----------------------------------------------"
     echo "  ✅ Assigned 'AcrPush' on $ACR_NAME to current user"
+    echo "----------------------------------------------"
 
     # Assign ACR Pull role to the current user
     az role assignment create \
@@ -561,24 +551,30 @@ echo "Assigning ACR Push role to the current user for AKS ACR access..."
       --role "AcrPull" \
       --scope "$ACR_ID"
 
+    echo "----------------------------------------------"
     echo "  ✅ Assigned 'AcrPull' on $ACR_NAME to current user"
+    echo "----------------------------------------------"
 
 # ACR Push for Splunk Assets to Container Registry
 echo "Pushing Splunk Operator container image to ACR..."
     az acr import \
       --name "$ACR_NAME" \
       --source $OPERATOR_IMAGE \
-      --image splunk/splunk-operator:3.0.0
+      --image $OPERATOR_TAG
 
+    echo "----------------------------------------------"
     echo "  ✅ Splunk Operator container image ($OPERATOR_IMAGE) pushed to ACR: $ACR_NAME"
+    echo "----------------------------------------------"
 
 echo "Pushing Splunk container image to ACR..."
     az acr import \
       --name "$ACR_NAME" \
       --source $SPLUNK_IMAGE \
-      --image splunk/splunk:9.4.5
+      --image $SPLUNK_TAG
 
+    echo "----------------------------------------------"
     echo "  ✅ Splunk container image ($SPLUNK_IMAGE) pushed to ACR: $ACR_NAME"
+    echo "----------------------------------------------"
 
 # Waiting for 30 seconds to ensure ACR replication and RBAC propagation
 echo "Waiting 30 seconds..."
@@ -586,8 +582,12 @@ sleep 30
 echo "Done waiting."
 
 # Output of container images pushed
+echo "----------------------------------------------"
 echo "Container images in ACR '$ACR_NAME':"
+echo "----------------------------------------------"
   CONTAINER_IMAGES=$(az acr repository list --name "$ACR_NAME" --output tsv)
   echo "$CONTAINER_IMAGES"
 
+echo "----------------------------------------------"
 echo "✅ Deployment '$DEPLOYMENT_NAME' completed successfully at subscription scope."
+echo "----------------------------------------------"

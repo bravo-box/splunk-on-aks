@@ -84,23 +84,6 @@
                 "description": "Enter the DNS prefix for the AKS Cluster."
             }
         },
-        "routeDefinitions": {
-            "type": "array",
-            "metadata": {
-                "description": "Array of route definitions"
-            }
-        },
-        "deployRoutes": {
-            "metadata": {
-                "description": "Deploy the routes in the ARM template to the route table"
-            },
-            "type": "string",
-            "allowedValues": [
-                "yes",
-                "no"
-            ],
-            "defaultValue": "no"
-        },
         "keyVaultName": {
             "type": "string",
             "defaultValue": "Enter the name of the Key Vault to use for KMS encryption.",
@@ -139,44 +122,6 @@
             "metadata": {
                 "description": "Enter the name of the resource group for the User Assigned Identity."
             }
-        },
-        "entraIDEnabled": {
-            "type": "bool",
-            "defaultValue": true,
-            "metadata": {
-                "description": "Enable Entra ID integration, True or False"
-            }
-        },
-        "fipsEnabled": {
-            "type": "bool",
-            "defaultValue": false,
-            "allowedValues": [
-                false,
-                true
-            ],
-            "metadata": {
-                "description": "Enable FIPS on your node pool, True or False"
-            }
-        },
-        "deployACR": {
-            "type": "string",
-            "metadata": {
-                "description": "Deploy an Azure Container Registry for your AKS Cluster"
-            },
-            "allowedValues": [
-                "yes",
-                "no"
-            ]
-        },
-        "deployNsgRT": {
-            "type": "string",
-            "metadata": {
-                "description": "Deploy a Network Security Group and Route Table for your AKS Cluster"
-            },
-            "allowedValues": [
-                "yes",
-                "no"
-            ]
         },
         "adminGroupObjectIDs": {
             "type": "string",
@@ -235,17 +180,8 @@
                     "existingVnetResourceGroup": {
                         "value": "[parameters('existingVnetResourceGroup')]"
                     },
-                    "routeDefinitions": {
-                        "value": "[parameters('routeDefinitions')]"
-                    },
-                    "deployRoutes": {
-                        "value": "[parameters('deployRoutes')]"
-                    },
                     "createdbyTag": {
                         "value": "[parameters('createdByTag')]"
-                    },
-                    "deployNsgRT": {
-                        "value": "[parameters('deployNsgRT')]"
                     }
                 },
                 "template": {
@@ -287,38 +223,11 @@
                                 "description": "Enter the name of the resource group for your existing vNet."
                             }
                         },
-                        "routeDefinitions": {
-                            "type": "array",
-                            "metadata": {
-                                "description": "Array of route definitions"
-                            }
-                        },
-                        "deployRoutes": {
-                            "metadata": {
-                                "description": "Deploy the routes in the ARM template to the route table"
-                            },
-                            "type": "string",
-                            "allowedValues": [
-                                "yes",
-                                "no"
-                            ],
-                            "defaultValue": "no"
-                        },
                         "newSubnetAddressPrefix": {
                             "type": "string",
                             "metadata": {
                                 "description": "Enter subnet address prefix."
                             }
-                        },
-                        "deployNsgRT": {
-                            "type": "string",
-                            "metadata": {
-                                "description": "Deploy a Network Security Group and Route Table for your AKS Cluster"
-                            },
-                            "allowedValues": [
-                                "yes",
-                                "no"
-                            ]
                         }
                     },
                     "variables": {
@@ -330,11 +239,9 @@
                             "type": "Microsoft.Network/networkSecurityGroups",
                             "apiVersion": "2020-06-01",
                             "name": "[variables('networkSecurityGroupName')]",
-                            "condition": "[equals(parameters('deployNsgRT'), 'yes')]",
                             "location": "[resourceGroup().location]",
                             "tags": {
-                                "CreatedBy": "[parameters('createdByTag')]",
-                                "DeployedBy": "AKS_Template_Spec"
+                                "CreatedBy": "[parameters('createdByTag')]"
                             },
                             "properties": {
                                 "securityRules": []
@@ -344,10 +251,9 @@
                             "type": "Microsoft.Network/routeTables",
                             "apiVersion": "2022-01-01",
                             "name": "[variables('routeTableName')]",
-                            "condition": "[equals(parameters('deployNsgRT'), 'yes')]",
                             "location": "[resourceGroup().location]",
                             "properties": {
-                                "routes": "[if(equals(parameters('deployRoutes'), 'yes'), parameters('routeDefinitions'), json('[]'))]"
+                                
                             }
                         }
                     ]
@@ -499,9 +405,6 @@
                     "clusterDNSprefix": {
                         "value": "[parameters('clusterDNSprefix')]"
                     },
-                    "fipsEnabled": {
-                        "value": "[parameters('fipsEnabled')]"
-                    },
                     "existingVnetResourceGroup": {
                         "value": "[parameters('existingVnetResourceGroup')]"
                     },
@@ -525,12 +428,6 @@
                     },
                     "userIDRGName": {
                         "value": "[parameters('userIDRGName')]"
-                    },
-                    "entraIDEnabled": {
-                        "value": "[parameters('entraIDEnabled')]"
-                    },
-                    "deployACR": {
-                        "value": "[parameters('deployACR')]"
                     },
                     "adminGroupObjectIDs": {
                         "value": "[parameters('adminGroupObjectIDs')]"
@@ -603,12 +500,6 @@
                                 "description": "Enter the DNS prefix for the AKS Cluster."
                             }
                         },
-                        "fipsEnabled": {
-                            "type": "bool",
-                            "metadata": {
-                                "description": "description"
-                            }
-                        },
                         "kubernetes_version": {
                             "type": "string",
                             "metadata": {
@@ -653,19 +544,6 @@
                                 "description": "Enter the resourceGroup name for the User Assigned Identity."
                             }
                         },
-                        "entraIDEnabled": {
-                            "type": "bool"
-                        },
-                        "deployACR": {
-                            "type": "string",
-                            "metadata": {
-                                "description": "Deploy an Azure Container Registry for your AKS Cluster"
-                            },
-                            "allowedValues": [
-                                "yes",
-                                "no"
-                            ]
-                        },
                         "adminGroupObjectIDs": {
                             "type": "string",
                             "defaultValue": "",
@@ -689,7 +567,7 @@
                         "jumpbox_lin_nic": "[concat(parameters('projectName'),'-lin-nic')]",
                         "jumpbox_win_vm": "[concat(parameters('projectName'),'-win')]",
                         "jumpbox_lin_vm": "[concat(parameters('projectName'),'-lin')]",
-                        "privateDNSZoneName": "privatelink.azurecr.us",
+                        "privateDNSZoneName": "[concat('privatelink', environment().suffixes.acrLoginServer)]",
                         "peName": "[concat(parameters('projectName'),'-acr-pe')]"
                     },
                     "resources": [
@@ -726,7 +604,7 @@
                                         "name": "pool01sys",
                                         "osDiskSizeGB": 0,
                                         "count": 2,
-                                        "enableFIPS": "[parameters('fipsEnabled')]",
+                                        "enableFIPS": true,
                                         "enableAutoScaling": true,
                                         "vmSize": "Standard_D4ds_v5",
                                         "osType": "linux",
@@ -751,7 +629,7 @@
                                         "name": "pool01app",
                                         "osDiskSizeGB": 0,
                                         "count": 2,
-                                        "enableFIPS": "[parameters('fipsEnabled')]",
+                                        "enableFIPS": true,
                                         "enableAutoScaling": true,
                                         "vmSize": "Standard_F16s_v2",
                                         "osType": "linux",
@@ -787,7 +665,7 @@
                                 },
                                 "aadProfile": {
                                     "managed": true,
-                                    "enableAzureRBAC": "[parameters('entraIDEnabled')]",
+                                    "enableAzureRBAC": true,
                                     "tenantID": "[tenant().tenantId]",
                                     "adminGroupObjectIDs": [
                                         "[parameters('adminGroupObjectIDs')]"
@@ -858,7 +736,6 @@
                             "type": "Microsoft.ContainerRegistry/registries",
                             "comments": "Deployment of Container Registry",
                             "apiVersion": "2025-04-01",
-                            "condition": "[equals(parameters('deployACR'), 'yes')]",
                             "name": "[concat(parameters('projectName'),'acr')]",
                             "location": "[parameters('location')]",
                             "tags": {
@@ -943,7 +820,6 @@
                         {
                             "type": "Microsoft.Network/privateEndpoints",
                             "comments": "Deployment of Private Endpoint for ACR",
-                            "condition": "[equals(parameters('deployACR'), 'yes')]",
                             "apiVersion": "2021-05-01",
                             "location": "[parameters('location')]",
                             "name": "[variables('peName')]",
