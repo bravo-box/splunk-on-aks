@@ -1,0 +1,1219 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": {
+            "type": "string",
+            "defaultValue": "usgovvirginia",
+            "allowedValues": [
+                "usgovvirginia",
+                "usgovarizona"
+            ],
+            "metadata": {
+                "description": "Enter the Location of resources."
+            }
+        },
+        "adminUsername": {
+            "type": "string",
+            "defaultValue": "Enter the username for the VMs",
+            "metadata": {
+                "description": "Enter the username for the VMs"
+            }
+        },
+        "adminPassword": {
+            "type": "securestring",
+            "defaultValue": "Enter the password for the VMs",
+            "metadata": {
+                "description": "Enter the password for the VMs"
+            }
+        },
+        "createdbyTag": {
+            "type": "string",
+            "defaultValue": "Enter your Flank Speed UPN as the creator of this resource",
+            "metadata": {
+                "description": "Enter your Flank Speed UPN as the creator of this resource"
+            }
+        },
+        "costcenter": {
+            "type": "string",
+            "defaultValue": "Enter your Cost Center eg: NCDOC",
+            "metadata": {
+                "description": "Enter your Cost Center eg: NCDOC"
+            }
+        },
+        "Service": {
+            "type": "string",
+            "defaultValue": "Mission Application",
+            "metadata": {
+                "description": "What is the Service for this resource"
+            }
+        },
+        "CostCategory": {
+            "type": "string",
+            "defaultValue": "Mission",
+            "metadata": {
+                "description": "Enter the Cost Category for this deployment"
+            }
+        },
+        "Env": {
+            "type": "string",
+            "defaultValue": "Enter your environment Prod, Dev, Test",
+            "metadata": {
+                "description": "Enter environment Prod, Dev, Test"
+            }
+        },
+        "BSO": {
+            "type": "string",
+            "defaultValue": "Enter your BSO",
+            "metadata": {
+                "description": "Enter your BSO Number: 39-NAVWARSYSCOM"
+            }
+        },
+        "BillingId": {
+            "type": "string",
+            "defaultValue": "Enter your Flank Speed UPN as the creator of this resource",
+            "metadata": {
+                "description": "Enter your billing id eg: 7806555"
+            }
+        },
+        "projectName": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 35,
+            "metadata": {
+                "description": "Enter the name for your project, can contain letters, numbers and hyphens. Recommend all lowercase."
+            }
+        },
+        "existingVNETName": {
+            "type": "string",
+            "defaultValue": "Enter the name of the vNet which this AKS Cluster will be deployed to. NOTE: this was provisioned by NNWC.",
+            "metadata": {
+                "description": "Enter the name of the vNet which this AKS Cluster will be deployed to. NOTE: this was provisioned by NNWC."
+            }
+        },
+        "existingVnetResourceGroup": {
+            "type": "string",
+            "defaultValue": "Enter the name of the resource group for your existing vNet.",
+            "metadata": {
+                "description": "Enter the name of the resource group for your existing vNet."
+            }
+        },
+        "newSubnetAddressPrefix": {
+            "type": "string",
+            "metadata": {
+                "description": "Enter the starting address for subnet. Do not enter CIDR, the template will create either /26 or /24 for small or medium size deployments"
+            }
+        },
+        "kubernetes_version": {
+            "type": "string",
+            "defaultValue": "1.33.2",
+            "metadata": {
+                "description": "The Kubernetes version. Default 1.33.2"
+            }
+        },
+        "clusterDNSprefix": {
+            "type": "string",
+            "defaultValue": "[concat(parameters('projectName'),'-aks')]",
+            "metadata": {
+                "description": "Enter the DNS prefix for the AKS Cluster."
+            }
+        },
+        "routeDefinitions": {
+            "type": "array",
+            "metadata": {
+                "description": "Array of route definitions"
+            }
+        },
+        "deployRoutes": {
+            "metadata": {
+                "description": "Deploy the routes in the ARM template to the route table"
+            },
+            "type": "string",
+            "allowedValues": [
+                "yes",
+                "no"
+            ],
+            "defaultValue": "no"
+        },
+        "keyVaultName": {
+            "type": "string",
+            "defaultValue": "Enter the name of the Key Vault to use for KMS encryption.",
+            "metadata": {
+                "description": "Enter the name of the Key Vault to use for KMS encryption."
+            }
+        },
+        "keyName": {
+            "type": "string",
+            "defaultValue": "Enter the name of the Key Vault Secret to use for KMS encryption.",
+            "metadata": {
+                "description": "Enter the name of the Key Vault Secret to use for KMS encryption."
+            }
+        },
+        "keyVaultAccess": {
+            "type": "string",
+            "defaultValue": "Public",
+            "allowedValues": [
+                "Public",
+                "Private"
+            ],
+            "metadata": {
+                "description": "Key Vault access type, Public or Private."
+            }
+        },
+        "userAssignedID": {
+            "type": "string",
+            "defaultValue": "Enter the name of the User Assigned Identity to use for AKS Cluster.",
+            "metadata": {
+                "description": "Enter the name of the User Assigned Identity to use for AKS Cluster."
+            }
+        },
+        "userIDRGName": {
+            "type": "string",
+            "defaultValue": "Enter the name of the resource group for the User Assigned Identity.",
+            "metadata": {
+                "description": "Enter the name of the resource group for the User Assigned Identity."
+            }
+        },
+        "entraIDEnabled": {
+            "type": "bool",
+            "defaultValue": true,
+            "metadata": {
+                "description": "Enable Entra ID integration, True or False"
+            }
+        },
+        "fipsEnabled": {
+            "type": "bool",
+            "defaultValue": false,
+            "allowedValues": [
+                false,
+                true
+            ],
+            "metadata": {
+                "description": "Enable FIPS on your node pool, True or False"
+            }
+        },
+        "deployACR": {
+            "type": "string",
+            "metadata": {
+                "description": "Deploy an Azure Container Registry for your AKS Cluster"
+            },
+            "allowedValues": [
+                "yes",
+                "no"
+            ]
+        },
+        "deployNsgRT": {
+            "type": "string",
+            "metadata": {
+                "description": "Deploy a Network Security Group and Route Table for your AKS Cluster"
+            },
+            "allowedValues": [
+                "yes",
+                "no"
+            ]
+        },
+        "adminGroupObjectIDs": {
+            "type": "string",
+            "defaultValue": [],
+            "metadata": {
+                "description": "Array of Entra ID Group Object IDs that will be assigned as AKS Admins"
+            }
+        },
+        "myIP": {
+            "metadata": {
+                "description": "Your public IP address for the ACR firewall rules"
+            },
+            "type": "string"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "comments": "Create a resource group for the AKS Cluster Resources",
+            "type": "Microsoft.Resources/resourceGroups",
+            "apiVersion": "2024-03-01",
+            "name": "[concat('rg-',parameters('projectName'))]",
+            "location": "[parameters('location')]",
+            "tags": {
+                "CreatedBy": "[parameters('createdByTag')]",
+                "DeployedBy": "AKS_Template_Spec",
+                "Service": "[parameters('Service')]",
+                "CostCategory": "[parameters('CostCategory')]",
+                "Env": "[parameters('Env')]",
+                "BSO": "[parameters('BSO')]",
+                "BillingId": "[parameters('BillingId')]",
+                "CostCenter": "[parameters('CostCenter')]"
+            }
+        },
+        {
+            "name": "deploy_route_nsg",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2024-03-01",
+            "resourceGroup": "[concat('rg-',parameters('projectName'))]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Resources/resourceGroups', concat('rg-',parameters('projectName')))]"
+            ],
+            "properties": {
+                "expressionEvaluationOptions": {
+                    "scope": "Inner"
+                },
+                "mode": "Incremental",
+                "parameters": {
+                    "location": {
+                        "value": "[parameters('location')]"
+                    },
+                    "existingVNETName": {
+                        "value": "[parameters('existingVNETName')]"
+                    },
+                    "projectName": {
+                        "value": "[parameters('projectName')]"
+                    },
+                    "newSubnetAddressPrefix": {
+                        "value": "[parameters('newSubnetAddressPrefix')]"
+                    },
+                    "existingVnetResourceGroup": {
+                        "value": "[parameters('existingVnetResourceGroup')]"
+                    },
+                    "routeDefinitions": {
+                        "value": "[parameters('routeDefinitions')]"
+                    },
+                    "deployRoutes": {
+                        "value": "[parameters('deployRoutes')]"
+                    },
+                    "createdbyTag": {
+                        "value": "[parameters('createdByTag')]"
+                    },
+                    "deployNsgRT": {
+                        "value": "[parameters('deployNsgRT')]"
+                    }
+                },
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "metadata": {},
+                    "parameters": {
+                        "location": {
+                            "type": "string",
+                            "allowedValues": [
+                                "usgovvirginia",
+                                "usgovarizona"
+                            ],
+                            "metadata": {
+                                "description": "Location of resources"
+                            }
+                        },
+                        "createdbyTag": {
+                            "type": "string",
+                            "metadata": {
+                                "description": "Enter your email address as the creator of this resource"
+                            }
+                        },
+                        "projectName": {
+                            "type": "string",
+                            "minLength": 5,
+                            "maxLength": 35,
+                            "metadata": {
+                                "description": "Enter a unique name for the AKS Cluster, can contain letters, numbers and hyphens."
+                            }
+                        },
+                        "existingVNETName": {
+                            "type": "string",
+                            "defaultValue": "Enter the name of the vNet which this AKS Cluster will be deployed to.",
+                            "metadata": {
+                                "description": "Enter the name of the vNet which this AKS Cluster will be deployed to."
+                            }
+                        },
+                        "existingVnetResourceGroup": {
+                            "type": "string",
+                            "defaultValue": "Enter the name of the resource group for your existing vNet.",
+                            "metadata": {
+                                "description": "Enter the name of the resource group for your existing vNet."
+                            }
+                        },
+                        "routeDefinitions": {
+                            "type": "array",
+                            "metadata": {
+                                "description": "Array of route definitions"
+                            }
+                        },
+                        "deployRoutes": {
+                            "metadata": {
+                                "description": "Deploy the routes in the ARM template to the route table"
+                            },
+                            "type": "string",
+                            "allowedValues": [
+                                "yes",
+                                "no"
+                            ],
+                            "defaultValue": "no"
+                        },
+                        "newSubnetAddressPrefix": {
+                            "type": "string",
+                            "metadata": {
+                                "description": "Enter subnet address prefix."
+                            }
+                        },
+                        "deployNsgRT": {
+                            "type": "string",
+                            "metadata": {
+                                "description": "Deploy a Network Security Group and Route Table for your AKS Cluster"
+                            },
+                            "allowedValues": [
+                                "yes",
+                                "no"
+                            ]
+                        }
+                    },
+                    "variables": {
+                        "networkSecurityGroupName": "[concat('nsg-', parameters('projectName'), '-aks')]",
+                        "routeTableName": "[concat('rt-', parameters('projectName'), '-aks')]"
+                    },
+                    "resources": [
+                        {
+                            "type": "Microsoft.Network/networkSecurityGroups",
+                            "apiVersion": "2020-06-01",
+                            "name": "[variables('networkSecurityGroupName')]",
+                            "condition": "[equals(parameters('deployNsgRT'), 'yes')]",
+                            "location": "[resourceGroup().location]",
+                            "tags": {
+                                "CreatedBy": "[parameters('createdByTag')]",
+                                "DeployedBy": "AKS_Template_Spec"
+                            },
+                            "properties": {
+                                "securityRules": []
+                            }
+                        },
+                        {
+                            "type": "Microsoft.Network/routeTables",
+                            "apiVersion": "2022-01-01",
+                            "name": "[variables('routeTableName')]",
+                            "condition": "[equals(parameters('deployNsgRT'), 'yes')]",
+                            "location": "[resourceGroup().location]",
+                            "properties": {
+                                "routes": "[if(equals(parameters('deployRoutes'), 'yes'), parameters('routeDefinitions'), json('[]'))]"
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "name": "deploy_subnet_to_existing_vnet",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2024-03-01",
+            "resourceGroup": "[parameters('existingVnetResourceGroup')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Resources/resourceGroups', concat('rg-',parameters('projectName')))]",
+                "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', concat('rg-',parameters('projectName')), '/providers/Microsoft.Resources/deployments/', 'deploy_route_nsg')]"
+            ],
+            "properties": {
+                "expressionEvaluationOptions": {
+                    "scope": "Inner"
+                },
+                "mode": "Incremental",
+                "parameters": {
+                    "location": {
+                        "value": "[parameters('location')]"
+                    },
+                    "existingVNETName": {
+                        "value": "[parameters('existingVNETName')]"
+                    },
+                    "projectName": {
+                        "value": "[parameters('projectName')]"
+                    },
+                    "newSubnetAddressPrefix": {
+                        "value": "[parameters('newSubnetAddressPrefix')]"
+                    },
+                    "existingVnetResourceGroup": {
+                        "value": "[parameters('existingVnetResourceGroup')]"
+                    },
+                    "createdbyTag": {
+                        "value": "[parameters('createdByTag')]"
+                    }
+                },
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "metadata": {},
+                    "parameters": {
+                        "location": {
+                            "type": "string",
+                            "allowedValues": [
+                                "usgovvirginia",
+                                "usgovarizona"
+                            ],
+                            "metadata": {
+                                "description": "Location of resources"
+                            }
+                        },
+                        "createdbyTag": {
+                            "type": "string",
+                            "metadata": {
+                                "description": "Enter your email address as the creator of this resource"
+                            }
+                        },
+                        "projectName": {
+                            "type": "string",
+                            "minLength": 5,
+                            "maxLength": 35,
+                            "metadata": {
+                                "description": "Enter a unique name for the AKS Cluster, can contain letters, numbers and hyphens."
+                            }
+                        },
+                        "existingVNETName": {
+                            "type": "string",
+                            "defaultValue": "Enter the name of the vNet which this AKS Cluster will be deployed to.",
+                            "metadata": {
+                                "description": "Enter the name of the vNet which this AKS Cluster will be deployed to."
+                            }
+                        },
+                        "existingVnetResourceGroup": {
+                            "type": "string",
+                            "defaultValue": "Enter the name of the resource group for your existing vNet.",
+                            "metadata": {
+                                "description": "Enter the name of the resource group for your existing vNet."
+                            }
+                        },
+                        "newSubnetAddressPrefix": {
+                            "type": "string",
+                            "metadata": {
+                                "description": "Enter subnet address prefix."
+                            }
+                        }
+                    },
+                    "variables": {
+                        "networkSecurityGroupName": "[concat('nsg-', parameters('projectName'), '-aks')]",
+                        "routeTableName": "[concat('rt-', parameters('projectName'), '-aks')]",
+                        "vNetSubscriptionId": "[subscription().subscriptionId]",
+                        "newAKSSubnetName": "[concat(parameters('projectName'),'-aks-snet')]"
+                    },
+                    "resources": [
+                        {
+                            "type": "Microsoft.Network/virtualNetworks/subnets",
+                            "apiVersion": "2023-06-01",
+                            "location": "[parameters('location')]",
+                            "name": "[format('{0}/{1}', parameters('existingVNETName'), variables('newAKSSubnetName'))]",
+                            "properties": {
+                                "addressPrefix": "[concat(parameters('newSubnetAddressPrefix'),'/27')]",
+                                "routeTable": {
+                                    "id": "[concat('/subscriptions/', variables('vNetSubscriptionId'), '/resourceGroups/', concat('rg-',parameters('projectName')), '/providers/Microsoft.Network/routeTables/', variables('routeTableName'))]"
+                                },
+                                "networkSecurityGroup": {
+                                    "id": "[concat('/subscriptions/', variables('vNetSubscriptionId'), '/resourceGroups/', concat('rg-',parameters('projectName')), '/providers/Microsoft.Network/networkSecurityGroups/', variables('networkSecurityGroupName'))]"
+                                },
+                                "delegations": []
+                            },
+                            "dependsOn": []
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "name": "Deploy_AKS_Cluster",
+            "comments": "Deploy AKS Cluster, Container Registry, and Splunk Jumpbox",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2024-03-01",
+            "resourceGroup": "[concat('rg-',parameters('projectName'))]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Resources/resourceGroups/', concat('rg-',parameters('projectName')))]",
+                "[concat('/subscriptions/', subscription().subscriptionId,'/resourceGroups/', parameters('existingVnetResourceGroup'),'/providers/Microsoft.Resources/deployments/','deploy_subnet_to_existing_vnet')]"
+            ],
+            "properties": {
+                "expressionEvaluationOptions": {
+                    "scope": "Inner"
+                },
+                "mode": "Incremental",
+                "parameters": {
+                    "location": {
+                        "value": "[parameters('location')]"
+                    },
+                    "existingVNETName": {
+                        "value": "[parameters('existingVNETName')]"
+                    },
+                    "adminUsername": {
+                        "value": "[parameters('adminUsername')]"
+                    },
+                    "adminPassword": {
+                        "value": "[parameters('adminPassword')]"
+                    },
+                    "projectName": {
+                        "value": "[parameters('projectName')]"
+                    },
+                    "newSubnetAddressPrefix": {
+                        "value": "[parameters('newSubnetAddressPrefix')]"
+                    },
+                    "clusterDNSprefix": {
+                        "value": "[parameters('clusterDNSprefix')]"
+                    },
+                    "fipsEnabled": {
+                        "value": "[parameters('fipsEnabled')]"
+                    },
+                    "existingVnetResourceGroup": {
+                        "value": "[parameters('existingVnetResourceGroup')]"
+                    },
+                    "createdbyTag": {
+                        "value": "[parameters('createdByTag')]"
+                    },
+                    "kubernetes_version": {
+                        "value": "[parameters('kubernetes_version')]"
+                    },
+                    "keyVaultName": {
+                        "value": "[parameters('keyVaultName')]"
+                    },
+                    "keyVaultAccess": {
+                        "value": "[parameters('keyVaultAccess')]"
+                    },
+                    "keyName": {
+                        "value": "[parameters('keyName')]"
+                    },
+                    "userAssignedID": {
+                        "value": "[parameters('userAssignedID')]"
+                    },
+                    "userIDRGName": {
+                        "value": "[parameters('userIDRGName')]"
+                    },
+                    "entraIDEnabled": {
+                        "value": "[parameters('entraIDEnabled')]"
+                    },
+                    "deployACR": {
+                        "value": "[parameters('deployACR')]"
+                    },
+                    "adminGroupObjectIDs": {
+                        "value": "[parameters('adminGroupObjectIDs')]"
+                    },
+                    "myIP": {
+                        "value": "[parameters('myIP')]"
+                    }
+                },
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "metadata": {},
+                    "parameters": {
+                        "location": {
+                            "type": "string",
+                            "allowedValues": [
+                                "usgovvirginia",
+                                "usgovarizona"
+                            ],
+                            "metadata": {
+                                "description": "Location of resources"
+                            }
+                        },
+                        "createdbyTag": {
+                            "type": "string",
+                            "metadata": {
+                                "description": "Enter your email address as the creator of this resource"
+                            }
+                        },
+                        "adminUsername": {
+                            "type": "string",
+                            "metadata": {
+                                "description": "Enter the username for the VMs"
+                            }
+                        },
+                        "adminPassword": {
+                            "type": "securestring",
+                            "metadata": {
+                                "description": "Enter the password for the VMs"
+                            }
+                        },
+                        "projectName": {
+                            "type": "string",
+                            "minLength": 5,
+                            "maxLength": 35,
+                            "metadata": {
+                                "description": "Enter a unique name for the AKS Cluster, can contain letters, numbers and hyphens."
+                            }
+                        },
+                        "existingVNETName": {
+                            "type": "string",
+                            "defaultValue": "Enter the name of the vNet which this AKS Cluster will be deployed to.",
+                            "metadata": {
+                                "description": "Enter the name of the vNet which this AKS Cluster will be deployed to."
+                            }
+                        },
+                        "existingVnetResourceGroup": {
+                            "type": "string",
+                            "defaultValue": "Enter the name of the resource group for your existing vNet.",
+                            "metadata": {
+                                "description": "Enter the name of the resource group for your existing vNet."
+                            }
+                        },
+                        "newSubnetAddressPrefix": {
+                            "type": "string",
+                            "metadata": {
+                                "description": "Enter subnet address prefix."
+                            }
+                        },
+                        "clusterDNSprefix": {
+                            "type": "string",
+                            "defaultValue": "Enter the DNS prefix for the AKS Cluster.",
+                            "metadata": {
+                                "description": "Enter the DNS prefix for the AKS Cluster."
+                            }
+                        },
+                        "fipsEnabled": {
+                            "type": "bool",
+                            "metadata": {
+                                "description": "description"
+                            }
+                        },
+                        "kubernetes_version": {
+                            "type": "string",
+                            "metadata": {
+                                "description": "description"
+                            }
+                        },
+                        "keyVaultName": {
+                            "type": "string",
+                            "defaultValue": "Enter the name of the Key Vault to use for KMS encryption.",
+                            "metadata": {
+                                "description": "Enter the name of the Key Vault to use for KMS encryption."
+                            }
+                        },
+                        "keyVaultAccess": {
+                            "type": "string",
+                            "defaultValue": "Public",
+                            "allowedValues": [
+                                "Public",
+                                "Private"
+                            ],
+                            "metadata": {
+                                "description": "Key Vault access type, Public or Private."
+                            }
+                        },
+                        "keyName": {
+                            "type": "string",
+                            "defaultValue": "Enter the name of the Key Vault Secret to use for KMS encryption.",
+                            "metadata": {
+                                "description": "Enter the name of the Key Vault Secret to use for KMS encryption."
+                            }
+                        },
+                        "userAssignedID": {
+                            "type": "string",
+                            "defaultValue": "Enter the name of the User Assigned Identity to use for AKS Cluster.",
+                            "metadata": {
+                                "description": "Enter the name of the User Assigned Identity to use for AKS Cluster."
+                            }
+                        },
+                        "userIDRGName": {
+                            "type": "string",
+                            "metadata": {
+                                "description": "description"
+                            }
+                        },
+                        "entraIDEnabled": {
+                            "type": "bool"
+                        },
+                        "deployACR": {
+                            "type": "string",
+                            "metadata": {
+                                "description": "Deploy an Azure Container Registry for your AKS Cluster"
+                            },
+                            "allowedValues": [
+                                "yes",
+                                "no"
+                            ]
+                        },
+                        "adminGroupObjectIDs": {
+                            "type": "string",
+                            "defaultValue": "",
+                            "metadata": {
+                                "description": "Entra ID Group Object IDs that will be assigned as AKS Admins"
+                            }
+                        },
+                        "myIP": {
+                            "metadata": {
+                                "description": "Your public IP address for the ACR firewall rules"
+                            },
+                            "type": "string"
+                        }
+                    },
+                    "variables": {
+                        "newAKSSubnetName": "[concat(parameters('projectName'),'-aks-snet')]",
+                        "aksClusterName": "[concat(parameters('projectName'),'-aks')]",
+                        "vNetSubscriptionId": "[subscription().subscriptionId]",
+                        "subnetID": "[concat('/subscriptions/', variables('vNetSubscriptionId'), '/resourceGroups/', parameters('existingVnetResourceGroup'), '/providers/Microsoft.Network/virtualNetworks/', parameters('existingVNETName'), '/subnets/', variables('newAKSSubnetName'))]",
+                        "jumpbox_win_nic": "[concat(parameters('projectName'),'-win-nic')]",
+                        "jumpbox_lin_nic": "[concat(parameters('projectName'),'-lin-nic')]",
+                        "jumpbox_win_vm": "[concat(parameters('projectName'),'-win')]",
+                        "jumpbox_lin_vm": "[concat(parameters('projectName'),'-lin')]",
+                        "privateDNSZoneName": "privatelink.azurecr.us",
+                        "peName": "[concat(parameters('projectName'),'-acr-pe')]"
+                    },
+                    "resources": [
+                        {
+                            "comments": "Deployment of AKS cluster",
+                            "apiVersion": "2025-07-01",
+                            "type": "Microsoft.ContainerService/managedClusters",
+                            "location": "[parameters('location')]",
+                            "sku": {
+                                "name": "Base",
+                                "tier": "Standard"
+                            },
+                            "tags": {
+                                "CreatedBy": "[parameters('createdByTag')]"
+                            },
+                            "name": "[variables('aksClusterName')]",
+                            "identity": {
+                                "type": "UserAssigned",
+                                "userAssignedIdentities": {
+                                    "[resourceId(subscription().subscriptionId, parameters('userIDRGName'), 'Microsoft.ManagedIdentity/userAssignedIdentities', parameters('userAssignedID'))]": {}
+                                }
+                            },
+                            "properties": {
+                                "kubernetesVersion": "[parameters('kubernetes_version')]",
+                                "enableRBAC": true,
+                                "dnsPrefix": "[parameters('clusterDNSprefix')]",
+                                "metricsProfile": {
+                                    "costAnalysis": {
+                                        "enabled": false
+                                    }
+                                },
+                                "agentPoolProfiles": [
+                                    {
+                                        "name": "pool01sys",
+                                        "osDiskSizeGB": 0,
+                                        "count": 2,
+                                        "enableFIPS": "[parameters('fipsEnabled')]",
+                                        "enableAutoScaling": true,
+                                        "vmSize": "Standard_D4ds_v5",
+                                        "osType": "linux",
+                                        "type": "VirtualMachineScaleSets",
+                                        "mode": "System",
+                                        "minCount": 2,
+                                        "maxCount": 8,
+                                        "maxPods": 30,
+                                        "upgradeSettings": {
+                                            "maxSurge": "10%"
+                                        },
+                                        "nodeLabels": {
+                                            "project": "[parameters('projectName')]"
+                                        },
+                                        "enableNodePublicIP": false,
+                                        "tags": {
+                                            "CreatedBy": "[parameters('createdByTag')]"
+                                        },
+                                        "vnetSubnetID": "[variables('subnetID')]"
+                                    },
+                                    {
+                                        "name": "pool01app",
+                                        "osDiskSizeGB": 0,
+                                        "count": 2,
+                                        "enableFIPS": "[parameters('fipsEnabled')]",
+                                        "enableAutoScaling": true,
+                                        "vmSize": "Standard_F16s_v2",
+                                        "osType": "linux",
+                                        "type": "VirtualMachineScaleSets",
+                                        "mode": "User",
+                                        "minCount": 2,
+                                        "maxCount": 10,
+                                        "maxPods": 60,
+                                        "upgradeSettings": {
+                                            "maxSurge": "10%"
+                                        },
+                                        "nodeLabels": {
+                                            "project": "[parameters('projectName')]"
+                                        },
+                                        "enableNodePublicIP": false,
+                                        "tags": {
+                                            "CreatedBy": "[parameters('createdByTag')]"
+                                        },
+                                        "vnetSubnetID": "[variables('subnetID')]"
+                                    }
+                                ],
+                                "addonProfiles": {
+                                    "azureKeyvaultSecretsProvider": {
+                                        "enabled": true,
+                                        "config": {
+                                            "enableSecretRotation": "true",
+                                            "rotationPollInterval": "15m"
+                                        }
+                                    },
+                                    "azurePolicy": {
+                                        "enabled": true
+                                    }
+                                },
+                                "aadProfile": {
+                                    "managed": true,
+                                    "enableAzureRBAC": "[parameters('entraIDEnabled')]",
+                                    "tenantID": "[tenant().tenantId]",
+                                    "adminGroupObjectIDs": [
+                                        "[parameters('adminGroupObjectIDs')]"
+                                    ]
+                                },
+                                "identityProfile": {
+                                    "kubeletidentity": {
+                                        "resourceId": "[resourceId(subscription().subscriptionId, parameters('userIDRGName'), 'Microsoft.ManagedIdentity/userAssignedIdentities', parameters('userAssignedID'))]"
+                                    }
+                                },
+                                "networkProfile": {
+                                    "loadBalancerSku": "standard",
+                                    "networkPlugin": "azure",
+                                    "networkPluginMode": "overlay",
+                                    "networkDataplane": "azure",
+                                    "podCidr": "10.10.0.0/16",
+                                    "serviceCidr": "172.0.0.0/16",
+                                    "dnsServiceIP": "172.0.0.5",
+                                    "podCidrs": [
+                                        "10.10.0.0/16"
+                                    ],
+                                    "serviceCidrs": [
+                                        "172.0.0.0/16"
+                                    ],
+                                    "ipFamilies": [
+                                        "IPv4"
+                                    ]
+                                },
+                                "securityProfile": {
+                                    "azureKeyVaultKms": {
+                                        "enabled": true,
+                                        "keyId": "[reference(resourceId(subscription().subscriptionId,parameters('userIDRGName'), 'Microsoft.KeyVault/vaults/keys', parameters('keyVaultName'), parameters('keyName')), '2024-12-01-preview').keyUriWithVersion]",
+                                        "keyVaultNetworkAccess": "[parameters('keyVaultAccess')]",
+                                        "keyVaultResourceId": "[if(equals(parameters('keyVaultAccess'),'Private'), resourceId(subscription().subscriptionId, parameters('userIDRGName'), 'Microsoft.KeyVault/vaults', parameters('keyVaultName')), json('null'))]"
+                                    },
+                                    "imageCleaner": {
+                                        "enabled": true,
+                                        "intervalHours": 96
+                                    },
+                                    "workloadIdentity": {
+                                        "enabled": true
+                                    }
+                                },
+                                "storageProfile": {
+                                    "diskCSIDriver": {
+                                        "enabled": true
+                                    },
+                                    "fileCSIDriver": {
+                                        "enabled": true
+                                    },
+                                    "blobCSIDriver": {
+                                        "enabled": true
+                                    },
+                                    "snapshotController": {
+                                        "enabled": true
+                                    }
+                                },
+                                "oidcIssuerProfile": {
+                                    "enabled": true
+                                },
+                                "apiServerAccessProfile": {
+                                    "enablePrivateCluster": true,
+                                    "privateDNSZone": "none"
+                                }
+                            }
+                        },
+                        {
+                            "type": "Microsoft.ContainerRegistry/registries",
+                            "comments": "Deployment of Container Registry",
+                            "apiVersion": "2025-04-01",
+                            "condition": "[equals(parameters('deployACR'), 'yes')]",
+                            "name": "[concat(parameters('projectName'),'acr')]",
+                            "location": "[parameters('location')]",
+                            "tags": {
+                                "displayName": "Container Registry",
+                                "CreatedBy": "[parameters('createdByTag')]",
+                                "container.registry": "[concat(parameters('projectName'),'acr')]"
+                            },
+                            "identity": {
+                                "type": "UserAssigned",
+                                "userAssignedIdentities": {
+                                    "[resourceId(subscription().subscriptionId, parameters('userIDRGName'), 'Microsoft.ManagedIdentity/userAssignedIdentities', parameters('userAssignedID'))]": {}
+                                }
+                            },
+                            "sku": {
+                                "name": "Premium",
+                                "tier": "Premium"
+                            },
+                            "properties": {
+                                "adminUserEnabled": false,
+                                "networkRuleSet": {
+                                    "defaultAction": "Deny",
+                                    "ipRules": [
+                                        {
+                                            "action": "Allow",
+                                            "value": "[parameters('myIP')]"
+                                        }
+                                    ]
+                                },
+                                "policies": {
+                                    "quarantinePolicy": {
+                                        "status": "disabled"
+                                    },
+                                    "trustPolicy": {
+                                        "type": "Notary",
+                                        "status": "disabled"
+                                    },
+                                    "retentionPolicy": {
+                                        "days": 7,
+                                        "status": "disabled"
+                                    },
+                                    "exportPolicy": {
+                                        "status": "enabled"
+                                    },
+                                    "azureADAuthenticationAsArmPolicy": {
+                                        "status": "enabled"
+                                    },
+                                    "softDeletePolicy": {
+                                        "retentionDays": 7,
+                                        "status": "disabled"
+                                    }
+                                },
+                                "dataEndpointEnabled": true,
+                                "publicNetworkAccess": "Enabled",
+                                "networkRuleBypassOptions": "AzureServices",
+                                "anonymousPullEnabled": false
+                            }
+                        },
+                        {
+                            "type": "Microsoft.Network/privateDnsZones",
+                            "apiVersion": "2024-06-01",
+                            "name": "[variables('privateDNSZoneName')]",
+                            "location": "global",
+                            "properties": {},
+                            "dependsOn": [],
+                            "resources": []
+                        },
+                        {
+                            "apiVersion": "2024-06-01",
+                            "name": "[concat(variables('privateDNSZoneName'), '/', 'pvtdns-link')]",
+                            "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
+                            "properties": {
+                                "virtualNetwork": {
+                                    "id": "[resourceId(parameters('existingVnetResourceGroup'), 'Microsoft.Network/virtualNetworks', parameters('existingVNETName'))]"
+                                },
+                                "registrationEnabled": false
+                            },
+                            "dependsOn": [
+                                "[resourceId('Microsoft.Network/privateDnsZones', variables('privateDNSZoneName'))]"
+                            ],
+                            "location": "global"
+                        },
+                        {
+                            "type": "Microsoft.Network/privateEndpoints",
+                            "comments": "Deployment of Private Endpoint for ACR",
+                            "condition": "[equals(parameters('deployACR'), 'yes')]",
+                            "apiVersion": "2021-05-01",
+                            "location": "[parameters('location')]",
+                            "name": "[variables('peName')]",
+                            "dependsOn": [
+                                "[resourceId('Microsoft.ContainerRegistry/registries', concat(parameters('projectName'), 'acr'))]"
+                            ],
+                            "properties": {
+                                "subnet": {
+                                    "id": "[variables('subnetID')]"
+                                },
+                                "privateLinkServiceConnections": [
+                                    {
+                                        "name": "[variables('peName')]",
+                                        "properties": {
+                                            "privateLinkServiceId": "[resourceId('Microsoft.ContainerRegistry/registries', concat(parameters('projectName'),'acr'))]",
+                                            "groupIds": [
+                                                "registry"
+                                            ]
+                                        }
+                                    }
+                                ]
+                            },
+                            "tags": {}
+                            
+                        },
+                        {
+                            "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
+                            "apiVersion": "2021-05-01",
+                            "name": "[concat(variables('peName'), '/', 'default')]",
+                            "location": "[parameters('location')]",
+                            "dependsOn": [
+                                "[resourceId('Microsoft.Network/privateEndpoints', variables('peName'))]",
+                                "[resourceId('Microsoft.Network/privateDnsZones', variables('privateDNSZoneName'))]"
+                            ],
+                            "properties": {
+                                "privateDnsZoneConfigs": [
+                                    {
+                                        "name": "[variables('privateDNSZoneName')]",
+                                        "properties": {
+                                            "privateDnsZoneId": "[resourceId('Microsoft.Network/privateDnsZones', variables('privateDNSZoneName'))]"
+
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "name": "[variables('jumpbox_win_nic')]",
+                            "comments": "Deployment of NIC for Windows Splunk Jumpbox",
+                            "type": "Microsoft.Network/networkInterfaces",
+                            "apiVersion": "2022-11-01",
+                            "location": "[parameters('location')]",
+                            "dependsOn": [],
+                            "properties": {
+                                "ipConfigurations": [
+                                    {
+                                        "name": "ipconfig1",
+                                        "properties": {
+                                            "subnet": {
+                                                "id": "[variables('subnetID')]"
+                                            },
+                                            "privateIPAllocationMethod": "Dynamic"
+                                        }
+                                    }
+                                ],
+                                "enableAcceleratedNetworking": true
+                            }
+                        },
+                        {
+                            "name": "[variables('jumpbox_win_vm')]",
+                            "comments": "Deployment of Windows Splunk Jumpbox",
+                            "type": "Microsoft.Compute/virtualMachines",
+                            "apiVersion": "2022-11-01",
+                            "location": "[parameters('location')]",
+                            "dependsOn": [
+                                "[concat('Microsoft.Network/networkInterfaces/', variables('jumpbox_win_nic'))]"
+                            ],
+                            "properties": {
+                                "hardwareProfile": {
+                                    "vmSize": "Standard_D8s_v3"
+                                },
+                                "storageProfile": {
+                                    "osDisk": {
+                                        "createOption": "fromImage",
+                                        "deleteOption": "Delete",
+                                        "managedDisk": {
+                                            "storageAccountType": "Premium_LRS"
+                                        }
+                                    },
+                                    "imageReference": {
+                                        "publisher": "microsoftwindowsdesktop",
+                                        "offer": "windows-11",
+                                        "sku": "win11-22h2-entn",
+                                        "version": "latest"
+                                    }
+                                },
+                                "networkProfile": {
+                                    "networkInterfaces": [
+                                        {
+                                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('jumpbox_win_nic'))]"
+                                        }
+                                    ]
+                                },
+                                "securityProfile": {
+                                    "securityType": "TrustedLaunch",
+                                    "uefiSettings": {
+                                        "secureBootEnabled": true,
+                                        "vTpmEnabled": true
+                                    }
+                                },
+                                "osProfile": {
+                                    "computerName": "[variables('jumpbox_win_vm')]",
+                                    "adminUsername": "[parameters('adminUsername')]",
+                                    "adminPassword": "[parameters('adminPassword')]",
+                                    "windowsConfiguration": {
+                                        "enableAutomaticUpdates": true,
+                                        "provisionVmAgent": true,
+                                        "patchSettings": {
+                                            "patchMode": "AutomaticByOS",
+                                            "enableHotpatching": false
+                                        }
+                                    }
+                                },
+                                "licenseType": "Windows_Client"
+                            }
+                        },
+                        {
+                            "name": "[variables('jumpbox_lin_nic')]",
+                            "type": "Microsoft.Network/networkInterfaces",
+                            "apiVersion": "2022-11-01",
+                            "location": "[parameters('location')]",
+                            "dependsOn": [],
+                            "properties": {
+                                "ipConfigurations": [
+                                    {
+                                        "name": "ipconfig1",
+                                        "properties": {
+                                            "subnet": {
+                                                "id": "[variables('subnetID')]"
+                                            },
+                                            "privateIPAllocationMethod": "Dynamic"
+                                        }
+                                    }
+                                ],
+                                "enableAcceleratedNetworking": true
+                            }
+                        },
+                        {
+                            "name": "[variables('jumpbox_lin_vm')]",
+                            "comments": "Deployment of Linux Splunk Jumpbox",
+                            "type": "Microsoft.Compute/virtualMachines",
+                            "apiVersion": "2022-11-01",
+                            "location": "[parameters('location')]",
+                            "dependsOn": [
+                                "[concat('Microsoft.Network/networkInterfaces/', variables('jumpbox_lin_nic'))]"
+                            ],
+                            "properties": {
+                                "hardwareProfile": {
+                                    "vmSize": "Standard_D8s_v3"
+                                },
+                                "storageProfile": {
+                                    "osDisk": {
+                                        "createOption": "fromImage",
+                                        "deleteOption": "Delete",
+                                        "managedDisk": {
+                                            "storageAccountType": "Premium_LRS"
+                                        }
+                                    },
+                                    "imageReference": {
+                                        "publisher": "canonical",
+                                        "offer": "ubuntu-24_04-lts",
+                                        "sku": "server",
+                                        "version": "latest"
+                                    }
+                                },
+                                "networkProfile": {
+                                    "networkInterfaces": [
+                                        {
+                                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('jumpbox_lin_nic'))]"
+                                        }
+                                    ]
+                                },
+                                "securityProfile": {
+                                    "securityType": "TrustedLaunch",
+                                    "uefiSettings": {
+                                        "secureBootEnabled": false,
+                                        "vTpmEnabled": false
+                                    }
+                                },
+                                "osProfile": {
+                                    "computerName": "[variables('jumpbox_lin_vm')]",
+                                    "adminUsername": "[parameters('adminUsername')]",
+                                    "adminPassword": "[parameters('adminPassword')]",
+                                    "linuxConfiguration": {
+                                        "patchSettings": {
+                                            "assessmentMode": "ImageDefault",
+                                            "patchMode": "ImageDefault"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    ],
+                    "outputs": {
+                        "resolvedKeyId": {
+                            "type": "string",
+                            "value": "[reference(resourceId(subscription().subscriptionId, parameters('userIDRGName'), 'Microsoft.KeyVault/vaults/keys', parameters('keyVaultName'), parameters('keyName')), '2024-12-01-preview').keyUriWithVersion]"
+                        },
+                        "userAssignedIdentities": {
+                            "type": "string",
+                            "value": "[resourceId(subscription().subscriptionId, parameters('userIDRGName'), 'Microsoft.ManagedIdentity/userAssignedIdentities', parameters('userAssignedID'))]"
+                        },
+                        "t-id": {
+                            "type": "string",
+                            "value": "[tenant().tenantId]"
+                        }
+                    }
+                }
+            }
+        }
+    ]
+}
