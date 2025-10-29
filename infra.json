@@ -62,13 +62,6 @@
                 "description": "Enter environment Prod, Dev, Test"
             }
         },
-        "BSO": {
-            "type": "string",
-            "defaultValue": "Enter your BSO",
-            "metadata": {
-                "description": "Enter your BSO Number: 39-NAVWARSYSCOM"
-            }
-        },
         "BillingId": {
             "type": "string",
             "defaultValue": "Enter your Flank Speed UPN as the creator of this resource",
@@ -240,7 +233,6 @@
                 "Service": "[parameters('Service')]",
                 "CostCategory": "[parameters('CostCategory')]",
                 "Env": "[parameters('Env')]",
-                "BSO": "[parameters('BSO')]",
                 "BillingId": "[parameters('BillingId')]",
                 "CostCenter": "[parameters('CostCenter')]"
             }
