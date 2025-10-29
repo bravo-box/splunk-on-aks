@@ -23,27 +23,9 @@
             },
             "value": ""
         },
-        "Service": {
-            "metadata": {
-                "description": "Service to tag resources"
-            },
-            "value": ""
-        },
-        "CostCategory": {
-            "metadata": {
-                "description": "Cost Category to tag resources"
-            },
-            "value": ""
-        },
         "Env": {
             "metadata": {
                 "description": "Environment to tag resources"
-            },
-            "value": ""
-        },
-        "BillingId": {
-            "metadata": {
-                "description": "Billing ID to tag resources"
             },
             "value": ""
         },
@@ -141,7 +123,7 @@
             "metadata": {
                 "description": "Key Vault Key Name to encrypt secrets"
             },
-            "value": ""
+            "value": "aks-cmk"
         },
         "userAssignedID": {
             "metadata": {

@@ -4,69 +4,43 @@
     "parameters": {
         "location": {
             "type": "string",
-            "defaultValue": "usgovvirginia",
-            "allowedValues": [
-                "usgovvirginia",
-                "usgovarizona"
-            ],
             "metadata": {
                 "description": "Enter the Location of resources."
             }
         },
         "adminUsername": {
             "type": "string",
-            "defaultValue": "Enter the username for the VMs",
+            "defaultValue": "Enter the username for the jumpbox VMs",
             "metadata": {
-                "description": "Enter the username for the VMs"
+                "description": "Enter the username for the jumpbox VMs"
             }
         },
         "adminPassword": {
             "type": "securestring",
-            "defaultValue": "Enter the password for the VMs",
+            "defaultValue": "Enter the password for the jumpbox VMs",
             "metadata": {
-                "description": "Enter the password for the VMs"
+                "description": "Enter the password for the jumpbox VMs"
             }
         },
         "createdbyTag": {
             "type": "string",
-            "defaultValue": "Enter your Flank Speed UPN as the creator of this resource",
+            "defaultValue": "someuser@domain.com",
             "metadata": {
-                "description": "Enter your Flank Speed UPN as the creator of this resource"
+                "description": "Enter your UPN as the creator of this resource"
             }
         },
         "costcenter": {
             "type": "string",
-            "defaultValue": "Enter your Cost Center eg: NCDOC",
+            "defaultValue": "12345",
             "metadata": {
-                "description": "Enter your Cost Center eg: NCDOC"
-            }
-        },
-        "Service": {
-            "type": "string",
-            "defaultValue": "Mission Application",
-            "metadata": {
-                "description": "What is the Service for this resource"
-            }
-        },
-        "CostCategory": {
-            "type": "string",
-            "defaultValue": "Mission",
-            "metadata": {
-                "description": "Enter the Cost Category for this deployment"
+                "description": "Enter your Cost Center"
             }
         },
         "Env": {
             "type": "string",
-            "defaultValue": "Enter your environment Prod, Dev, Test",
+            "defaultValue": "Dev",
             "metadata": {
                 "description": "Enter environment Prod, Dev, Test"
-            }
-        },
-        "BillingId": {
-            "type": "string",
-            "defaultValue": "Enter your Flank Speed UPN as the creator of this resource",
-            "metadata": {
-                "description": "Enter your billing id eg: 7806555"
             }
         },
         "projectName": {
@@ -79,9 +53,9 @@
         },
         "existingVNETName": {
             "type": "string",
-            "defaultValue": "Enter the name of the vNet which this AKS Cluster will be deployed to. NOTE: this was provisioned by NNWC.",
+            "defaultValue": "Enter the name of the vNet which this AKS Cluster will be deployed to.",
             "metadata": {
-                "description": "Enter the name of the vNet which this AKS Cluster will be deployed to. NOTE: this was provisioned by NNWC."
+                "description": "Enter the name of the vNet which this AKS Cluster will be deployed to."
             }
         },
         "existingVnetResourceGroup": {
@@ -94,7 +68,7 @@
         "newSubnetAddressPrefix": {
             "type": "string",
             "metadata": {
-                "description": "Enter the starting address for subnet. Do not enter CIDR, the template will create either /26 or /24 for small or medium size deployments"
+                "description": "Enter the starting address for subnet. Do not enter CIDR, the template will create /27 subnet."
             }
         },
         "kubernetes_version": {
@@ -106,7 +80,6 @@
         },
         "clusterDNSprefix": {
             "type": "string",
-            "defaultValue": "[concat(parameters('projectName'),'-aks')]",
             "metadata": {
                 "description": "Enter the DNS prefix for the AKS Cluster."
             }
@@ -137,7 +110,7 @@
         },
         "keyName": {
             "type": "string",
-            "defaultValue": "Enter the name of the Key Vault Secret to use for KMS encryption.",
+            "defaultValue": "aks-cmk",
             "metadata": {
                 "description": "Enter the name of the Key Vault Secret to use for KMS encryption."
             }
@@ -229,11 +202,7 @@
             "location": "[parameters('location')]",
             "tags": {
                 "CreatedBy": "[parameters('createdByTag')]",
-                "DeployedBy": "AKS_Template_Spec",
-                "Service": "[parameters('Service')]",
-                "CostCategory": "[parameters('CostCategory')]",
                 "Env": "[parameters('Env')]",
-                "BillingId": "[parameters('BillingId')]",
                 "CostCenter": "[parameters('CostCenter')]"
             }
         },
@@ -286,10 +255,6 @@
                     "parameters": {
                         "location": {
                             "type": "string",
-                            "allowedValues": [
-                                "usgovvirginia",
-                                "usgovarizona"
-                            ],
                             "metadata": {
                                 "description": "Location of resources"
                             }
@@ -430,10 +395,6 @@
                     "parameters": {
                         "location": {
                             "type": "string",
-                            "allowedValues": [
-                                "usgovvirginia",
-                                "usgovarizona"
-                            ],
                             "metadata": {
                                 "description": "Location of resources"
                             }
@@ -585,10 +546,6 @@
                     "parameters": {
                         "location": {
                             "type": "string",
-                            "allowedValues": [
-                                "usgovvirginia",
-                                "usgovarizona"
-                            ],
                             "metadata": {
                                 "description": "Location of resources"
                             }
@@ -678,7 +635,7 @@
                         },
                         "keyName": {
                             "type": "string",
-                            "defaultValue": "Enter the name of the Key Vault Secret to use for KMS encryption.",
+                            "defaultValue": "aks-cmk",
                             "metadata": {
                                 "description": "Enter the name of the Key Vault Secret to use for KMS encryption."
                             }
@@ -693,7 +650,7 @@
                         "userIDRGName": {
                             "type": "string",
                             "metadata": {
-                                "description": "description"
+                                "description": "Enter the resourceGroup name for the User Assigned Identity."
                             }
                         },
                         "entraIDEnabled": {
@@ -758,7 +715,7 @@
                             "properties": {
                                 "kubernetesVersion": "[parameters('kubernetes_version')]",
                                 "enableRBAC": true,
-                                "dnsPrefix": "[parameters('clusterDNSprefix')]",
+                                "dnsPrefix": "[variables('aksClusterName')]",
                                 "metricsProfile": {
                                     "costAnalysis": {
                                         "enabled": false
