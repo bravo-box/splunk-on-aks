@@ -225,7 +225,7 @@ fi
     # Get your current user principal ID
     DEPLOYER_PRINCIPAL_ID=$(az ad signed-in-user show --query id -o tsv)
 
-    # Assign Key Vault Crypto Officer role to allow key creation
+    # Assign Key Vault Crypto Officer role to Key Vault management for current signed in user
     az role assignment create \
         --assignee "$DEPLOYER_PRINCIPAL_ID" \
         --role "Key Vault Crypto Officer" \
@@ -305,11 +305,14 @@ fi
       read -rp "VNet name cannot be empty. Please enter your existing VNet name: " existingVNETName
     done
 
-    # vNet Resource Group name for your AKS Private Cluster
-    read -rp "Enter the resource group of your existing VNet (e.g., networking-rg): " existingVnetResourceGroup
-    while [[ -z "$existingVnetResourceGroup" ]]; do
-      read -rp "VNet Resource Group cannot be empty. Please enter your existing VNet Resource Group name: " existingVnetResourceGroup
-    done
+    # Get vNet Resource Group name for your AKS Private Cluster
+    existingVnetResourceGroup=$(az network vnet list --query "[?name=='$existingVNETName'].resourceGroup" -o tsv)
+    echo "Using VNet Resource Group: $existingVnetResourceGroup"
+
+    # Get the subnet list for the existing vNet
+    SUBNET_LIST=$(az network vnet list --query "[?name=='$existingVNETName'].subnets[].{Name:name, Address:addressPrefix}" -o table)
+    echo "Existing subnets in VNet '$existingVNETName':"
+    echo "$SUBNET_LIST"
 
     # Enter the IP Address prefix for the deployed subnet
     read -rp "Enter the IP Address prefix for the new subnet (e.g., 10.0.0.0) the template will add a /27 to the appendix: " SUBNET_PREFIX

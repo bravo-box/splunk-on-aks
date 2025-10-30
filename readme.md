@@ -1,6 +1,6 @@
 # Splunk on AKS Readme
 
-This is blog is written as a quickstart to show how to deploy Splunk on Azure Kubernetes Service (AKS). For a deep dive on AKS be sure to visit the Microsoft Learn content for concepts and architectures.
+This is written as a quickstart to show how to deploy Splunk on Azure Kubernetes Service (AKS). For a deep dive on AKS be sure to visit the Microsoft Learn content for concepts and architectures.
 
 https://learn.microsoft.com/en-us/azure/aks/core-aks-concepts
 
@@ -11,28 +11,42 @@ The jumpstart architecture we are building is comprised of:
 - Azure Kubernetes Service deployed as a private cluster
 - Azure Container Registry with a private endpoint and private DNS zone
 - Deploys a subnet to an existing vNet and creates network security group and route table
-- Two jumpboxes deployed to the same subnet, one Linux and one Windows
+- Two jumpboxes deployed to the same subnet, one Linux and one Windows to do AKS administration as it is deployed as a private cluster.
 - Bash script to provision the Linux box post deployment
 - Bash script to deploy Splunk-C3 reference architecture to AKS.
-
-There are a few prerequisites that we are not building within the cluster, this decision was primarily due to giving greater flexibility, there is nothing stopping you from provisioning the prereq's in the infrastructure template.
-
 - KeyVault
-- Storage Account
-- User Assigned Managed Identity
+- Storage Account for the cluster and Splunk Apps
+- User Assigned Managed Identity for cluster operations
 
 ## Deploying the prerequisites
 
 These tasks can be done either through cli, powershell or the portal.
 Througout this post will share the az cli commands that you can run to do the manual configs. We have also provided a full bash script that will build the entire infrastructure for you.
-That entails building the Resource Group, Key Vault, Storage Account, User Assigned Managed Identity (UAMI) and assigning the necessary roles to the UAMI. Once the prereqs are complete the bash script will build the parameter file and deploy the ARM template.
-Should you decide to use the bash file:
+
+The deploy_infra.sh can create a Resource Group for the prerequisites, Key Vault, Storage Account and User Assigned Managed Identity (UAMI). The bash script will also assign the necessary roles to the UAMI. Once the prereqs are complete the bash script will build the parameter file and deploy the ARM template (infra.json).
+Should you decide to use the bash file (recommended approach):
 
 ```bash
-bash deploy_infra.sh
-
-# Follow the prompts
+chmod +x deploy_infra.sh
+./deploy_infra.sh
 ```
+
+You will be prompted for the following, you can chose not to deploy the RG, KV, Storage Account and UAMI. You will need to provide details of them and they will need to be in the same resource group.
+
+1. The cloud you are using, AzureCloud or AzureUSGovernment
+2. The location of the resources, use the name of the location not the display name. eg: westus or usgovvirginia. Note that this should be the same as the vNet that you are going to be building in.
+3. Resource Group for the KeyVault, Storage Account and UAMI
+4. KeyVault name - it will append a 10 digit random number to the end of the name eg: kv-test entered will become kv-testabc123de90
+5. Storage Account name - same as above, it will append the 10 digit random number. Note storage accounts can only accecpt alpah numeric, no special characters.
+6. User Assigned Managed Identity (UAMI). You can chose to use an existing UAMI if you have one
+7. Project name - this is name that will be used to name all resources in this deployment. Should be greater than 5 characters and no spaces or special characters eg: alpha
+8. Existing vNet name
+9. Enter the IP address space for the cluster. By default this deployment will provision a /27. You only need to enter the x.x.x.x eg: 10.0.1.0
+10. Enter the username for your jumpboxes
+11. Enter the password for the jumboxes
+12. Group ID from Entra. This is a group that will be used to manage access to the AKS Cluster
+13. Tag Cost Center, if you dont use press enter and it will assign n/a
+14. Tag Env, this is Dev, Test, Prod. If you dont use tags then enter to skip it will add n/a
 
 ### Assumptions
 It is assumed that there is a vNet already in place and that you have an Azure Bastion service already enabled for connectivity to the VMs. If these are not present, you will need to create before proceeding.
