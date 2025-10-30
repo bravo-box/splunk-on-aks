@@ -7,8 +7,10 @@
 # build out the necessary resources for an AKS Private Cluster with CMK, UAMI, Key Vault, and Storage Account.
 # You will be prompted to create or use existing resources as needed.
 # Prerequisites:
-#   - Azure CLI installed and logged in
+#   - Azure CLI installed
 #   - Sufficient permissions to create resources and assign roles
+#   - Ensure you can run bash scripts on your system
+#   - vNet in your subscription and Bastion for connection to the jumpboxes
 #============================================================
 
 set -e
