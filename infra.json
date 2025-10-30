@@ -568,7 +568,8 @@
                         "jumpbox_win_vm": "[concat(parameters('projectName'),'-win')]",
                         "jumpbox_lin_vm": "[concat(parameters('projectName'),'-lin')]",
                         "privateDNSZoneName": "[concat('privatelink', environment().suffixes.acrLoginServer)]",
-                        "peName": "[concat(parameters('projectName'),'-acr-pe')]"
+                        "peName": "[concat(parameters('projectName'),'-acr-pe')]",
+                        "acrName": "[concat(parameters('projectName'), 'acr', substring(uniqueString(resourceGroup().id, deployment().name), 0, 10))]"
                     },
                     "resources": [
                         {
@@ -736,7 +737,7 @@
                             "type": "Microsoft.ContainerRegistry/registries",
                             "comments": "Deployment of Container Registry",
                             "apiVersion": "2025-04-01",
-                            "name": "[concat(parameters('projectName'),'acr')]",
+                            "name": "[variables('acrName')]",
                             "location": "[parameters('location')]",
                             "tags": {
                                 "displayName": "Container Registry",
@@ -824,7 +825,7 @@
                             "location": "[parameters('location')]",
                             "name": "[variables('peName')]",
                             "dependsOn": [
-                                "[resourceId('Microsoft.ContainerRegistry/registries', concat(parameters('projectName'), 'acr'))]"
+                                "[resourceId('Microsoft.ContainerRegistry/registries', variables('acrName'))]"
                             ],
                             "properties": {
                                 "subnet": {
@@ -834,7 +835,7 @@
                                     {
                                         "name": "[variables('peName')]",
                                         "properties": {
-                                            "privateLinkServiceId": "[resourceId('Microsoft.ContainerRegistry/registries', concat(parameters('projectName'),'acr'))]",
+                                            "privateLinkServiceId": "[resourceId('Microsoft.ContainerRegistry/registries', variables('acrName'))]",
                                             "groupIds": [
                                                 "registry"
                                             ]
