@@ -17,6 +17,7 @@ set -e
 SPLUNK_IMAGE="${SPLUNK_IMAGE:-docker.io/splunk/splunk:9.4.5}"
 OPERATOR_IMAGE="${OPERATOR_IMAGE:-docker.io/splunk/splunk-operator:3.0.0}"
 MY_IP=$(curl -s https://ifconfig.me | awk '{print $1}')
+RAND_SUFFIX=$(openssl rand -hex 5)
 
 # Extract the part after the registry (e.g. "splunk/splunk:9.4.5" or "splunk/splunk-operator:3.0.0")
 SPLUNK_TAG="${SPLUNK_IMAGE#*/}"  # Removes first part before first "/"
@@ -58,41 +59,57 @@ echo "  Name: $SUBSCRIPTION_NAME"
 echo "  ID:   $SUBSCRIPTION_ID"
 echo
 
-# --- GET REGION ---
-read -rp "Enter Azure region/location (e.g., westus2, usgovvirginia): " LOCATION
+# --- SELECT LOCATION ---
+echo "Available Azure regions:"
+az account list-locations --query "sort_by([].{Name:name, DisplayName:displayName}, &Name)" -o table
+echo
+read -rp "Enter the Azure region for deployment (e.g., eastus, westus or usgovirginia): " LOCATION
 while [[ -z "$LOCATION" ]]; do
-  read -rp "Location cannot be empty. Please enter Azure region/location: " LOCATION
+  read -rp "Location cannot be empty. Please enter a valid Azure region: " LOCATION
 done
+echo "Selected location: $LOCATION"
+echo
 
 # --- CREATE OR USE EXISTING RESOURCE GROUP ---
-read -p "Do you want to create a new Resource Group for shared services, KV, Storage, UAMI? (y/n): " CREATE_RG
+while true; do
+  read -rp "Do you want to create a new Resource Group for shared services, KV, Storage, UAMI? (y/n): " CREATE_RG
+  # normalize to single lowercase char, trim whitespace
+  CREATE_RG=$(echo "$CREATE_RG" | tr '[:upper:]' '[:lower:]')           # convert to lowercase
+  CREATE_RG="${CREATE_RG%%+([[:space:]])}" # no-op if no extglob; safe fallback
+  # Accept only y or n
+  if [[ "$CREATE_RG" =~ ^[yn]$ ]]; then
+    break
+  else
+    echo "Please answer 'y' or 'n'."
+  fi
+done
 
-if [[ "$CREATE_RG" =~ ^[Yy]$ ]]; then
-  echo
-  read -rp "Enter new Resource Group name (e.g., myresourcegroup-rg): " RESOURCE_GROUP
-  while [[ -z "$RESOURCE_GROUP" ]]; do
-    read -rp "Resource group name cannot be empty. Please enter a name: " RESOURCE_GROUP
-  done
+  if [[ "$CREATE_RG" == "y" ]]; then
+    echo
+    read -rp "Enter new Resource Group name (e.g., myresourcegroup-rg): " RESOURCE_GROUP
+    while [[ -z "$RESOURCE_GROUP" ]]; do
+      read -rp "Resource group name cannot be empty. Please enter a name: " RESOURCE_GROUP
+    done
 
   echo "Creating resource group '$RESOURCE_GROUP' in '$LOCATION'..."
   az group create -n "$RESOURCE_GROUP" -l "$LOCATION" >/dev/null
   echo "✅ Resource group created."
 
-else
-  echo
-  read -rp "Enter existing Resource Group name where your KV, Storage Account and UAMI exist: " RESOURCE_GROUP
-  while [[ -z "$RESOURCE_GROUP" ]]; do
-    read -rp "Resource Group name cannot be empty. Enter existing Resource Group name: " RESOURCE_GROUP
-  done
+    else
+      echo
+      read -rp "Enter existing Resource Group name where your KV, Storage Account and UAMI exist: " RESOURCE_GROUP
+      while [[ -z "$RESOURCE_GROUP" ]]; do
+        read -rp "Resource Group name cannot be empty. Enter existing Resource Group name: " RESOURCE_GROUP
+      done
+    fi
 
-  if ! az group show -n "$RESOURCE_GROUP" &>/dev/null; then
-    echo "❌ Resource Group '$RESOURCE_GROUP' not found. Please verify and rerun the script."
-    exit 1
-  fi
+    if ! az group show -n "$RESOURCE_GROUP" &>/dev/null; then
+      echo "❌ Resource Group '$RESOURCE_GROUP' not found. Please verify and rerun the script."
+      exit 1
+    fi
 
   LOCATION=$(az group show -n "$RESOURCE_GROUP" --query "location" -o tsv)
   echo "✅ Using existing Resource Group: $RESOURCE_GROUP (location: $LOCATION)"
-fi
 
 # --- DEPLOY OR USE EXISTING KEY VAULT + STORAGE ACCOUNT ---
 read -p "Do you want to deploy a Key Vault and Storage Account before the ARM template? (y/n): " CREATE_PREDEPLOY
@@ -102,6 +119,9 @@ if [[ "$CREATE_PREDEPLOY" =~ ^[Yy]$ ]]; then
   read -rp "Enter Key Vault name (must be globally unique): " KV_NAME
   read -rp "Enter Storage Account name (must be globally unique, 3-24 lowercase letters/numbers): " SA_NAME
 
+  # Append it to the KV name (make sure to stay under Azure's 24-char limit for KV names)
+  KV_NAME="${KV_NAME}${RAND_SUFFIX}"
+
   echo "Creating Key Vault '$KV_NAME'..."
   az keyvault create \
     -n "$KV_NAME" \
@@ -109,6 +129,9 @@ if [[ "$CREATE_PREDEPLOY" =~ ^[Yy]$ ]]; then
     -l "$LOCATION" \
     >/dev/null
   echo "✅ Key Vault created."
+
+  # Append it to the SA name (make sure to stay under Azure's 24-char limit for SA names)
+  SA_NAME="${SA_NAME}${RAND_SUFFIX}"
 
   echo "Creating Storage Account '$SA_NAME'..."
   az storage account create \
@@ -516,7 +539,7 @@ echo "Assigning network role to the UAMI for AKS Ingress deployments..."
 echo "Assigning ACR Pull role to the UAMI for AKS ACR access..."
     # --- ACR PULL ROLE ---
     # Get ACR name
-    ACR_NAME="${PROJECT_NAME}acr"
+    ACR_NAME=$(az acr list -g "rg-$PROJECT_NAME" --query "[?starts_with(name, '${PROJECT_NAME}')].name" -o tsv)
     ACR_ID=$(az acr show -n "$ACR_NAME" -g "rg-$PROJECT_NAME" --query "id" -o tsv)
 
     # Assign ACR Pull role to the UAMI
