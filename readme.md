@@ -40,7 +40,7 @@ az network bastion create \
   --sku Standard
 ```
 
-## Deploying the prerequisites
+## Automated Deployment for the Infrastructure
 
 These tasks can be done either through cli, powershell or the portal.
 Througout this post will share the az cli commands that you can run to do the manual configs. We have also provided a full bash script that will build the entire infrastructure for you.
