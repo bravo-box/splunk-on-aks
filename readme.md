@@ -70,6 +70,8 @@ You will be prompted for the following, you can chose not to deploy the RG, KV, 
 13. Tag Cost Center, if you dont use press enter and it will assign n/a
 14. Tag Env, this is Dev, Test, Prod. If you dont use tags then enter to skip it will add n/a
 
+## Manual Deployment
+
 ### Creating the keyVault
 
 ```cli
@@ -86,7 +88,7 @@ $kv_name="keyVault Name"
 az keyvault create -n <kvname> -g <your_RG> -location <location>
 ```
 
-**Note your keyvault name needs to be globally unique**
+#### Note your keyvault name needs to be globally unique
 
 ### Creating the Storage Account
 
@@ -94,7 +96,9 @@ az keyvault create -n <kvname> -g <your_RG> -location <location>
 az storage account create -n <storageacctname> -g <your_RG> -location <region>  --min-tls-version TLS1_2  --allow-blob-public-access false
 ```
 
-**Note your keyvault name needs to be globally unique and no special characters, uppercase or spaces or dashes**
+#### Note your keyvault name needs to be globally unique and no special characters, uppercase or spaces or dashes
+
+Reference for Azure naming requirements here: https://learn.microsoft.com/en-us/azure/azure-resource-manager/management/resource-name-rules
 
 ### Creating the User Assigned Managed Identity
 
@@ -146,187 +150,104 @@ It is important to note that this deployment is deployed as a private cluster. A
 For the subnet there is an NSG and RT that gets builts you have the choice of deploying the routes to the route table.
 Before you deploy verify all the details in the parameter file, you will need to capture the following:
 
-```json
+You can get your public IP for the ACR firewall rule here, you can place this in the parameter file for the infrastructure deployment.
 
-    "location": {
-        "value": "USGov Virginia"
-    },
-    "projectName": {
-        "value": "xxxx"
-    },
-    "createdbyTag": {
-        "value": "xxxx"
-    },
-    "costcenter": {
-        "value": "xxxx"
-    },
-    "Service": {
-        "value": "xxxx"
-    },
-    "CostCategory": {
-        "value": "xxxx"
-    },
-    "Env": {
-        "value": "xxxx"
-    },
-    "BSO": {
-        "value": "xxxx"
-    },
-    "BillingId": {
-        "value": "xxxxx"
-    },
-    "adminUsername": {
-        "metadata": {
-            "description": "Admin username for the jumpboxes. Must be between 1 and 20 characters long."
-        },
-        "value": "xxxxxx"
-    },
-    "adminPassword": {
-        "metadata": {
-            "description": "Admin password for the jumpboxes. Must be at least 12 characters long and meet complexity requirements."
-        },
-        "value": ""
-    },
-    "existingVNETName": {
-        "metadata": {
-            "description": "Name of the existing VNET"
-        },
-        "value": "xxxxx"
-    },
-    "existingVnetResourceGroup": {
-        "metadata": {
-            "description": "Resource Group of the existing VNET"
-        },
-        "value": "xxxxxxxx"
-    },
-    "newSubnetAddressPrefix": {
-        "metadata": {
-            "description": "Address prefix for the new Subnet. Must be a subset of the existing VNET address space. AKS will deploy /27 all you need is the x.x.x.0"
-        },
-        "value": "10.0.27.0"
-    },
-    "kubernetes_version": {
-        "metadata": {
-            "description": "Kubernetes version for the AKS Cluster."
-        },
-        "value": "1.33.2"
-    },
-    "clusterDNSprefix": {
-        "metadata": {
-            "description": "Enter the DNS prefix for the AKS Cluster. eg: test, note no . or local or com etc"
-        },
-        "value": "xxxxx"
-    },
-    "deployRoutes": {
-        "metadata": {
-            "description": "Deploy custom routes to the new Subnet, yes or no"
-        },
-        "value": "no"
-    },
-    "routeDefinitions": {
-        "value": [
-            {
-                "name": "External",
-                "properties": {
-                    "addressPrefix": "0.0.0.0/0",
-                    "nextHopType": "VirtualAppliance",
-                    "nextHopIpAddress": "1.2.3.4"
-                }
-            },
-            {
-                "name": "route 1",
-                "properties": {
-                    "addressPrefix": "4.3.2.1/32",
-                    "nextHopType": "VirtualAppliance",
-                    "nextHopIpAddress": "1.2.3.4"
-                }
-            },
-            {
-                "name": "route 2",
-                "properties": {
-                    "addressPrefix": "5.6.7.8/32",
-                    "nextHopType": "VirtualAppliance",
-                    "nextHopIpAddress": "5.6.7.8"
-                }
-            },
-            {
-                "name": "route 3",
-                "properties": {
-                    "addressPrefix": "6.7.8.9/32",
-                    "nextHopType": "VirtualAppliance",
-                    "nextHopIpAddress": "6.7.8.9"
-                }
-            }
-        ]
-    },
-    "keyVaultName": {
-        "metadata": {
-            "description": "Key Vault Name to store secrets"
-        },
-        "value": "xxxxx"
-    },
-    "keyName": {
-        "metadata": {
-            "description": "Key Vault Key Name to encrypt secrets"
-        },
-        "value": "xxxxx"
-    },
-    "userAssignedID": {
-        "metadata": {
-            "description": "User Assigned Managed Identity Name"
-        },
-        "value": "xxxxxx"
-    },
-    "userIDRGName": {
-        "metadata": {
-            "description": "User Assigned Managed Identity Resource Group Name"
-        },
-        "value": "xxxxxxx"
-    },
-    "keyVaultAccess": {
-        "metadata": {
-            "description": "Enable Key Vault access via public endpoint or private endpoint"
-        },
-        "value": "Public"
-    },
-    "entraIDEnabled":{
-        "metadata": {
-            "description": "Enable Entra ID integration with your AKS Cluster, True or False"
-        },
-        "value": true
-    },
-    "fipsEnabled": {
-        "metadata": {
-            "description": "Enable FIPS on your node pool, True or False"
-        },
-        "value": true
-    },
-    "deployACR": {
-        "metadata": {
-            "description": "Deploy an Azure Container Registry (ACR) along with the AKS Cluster"
-        },
-        "value": "yes"
-    },
-    "deployNsgRT": {
-        "metadata": {
-            "description": "Deploy NSG and Route Table to the new Subnet"
-        },
-        "value": "yes"
-    },
-    "adminGroupObjectIDs": {
-        "metadata": {
-            "description": "Entra ID Group Object IDs that will be assigned as AKS Admins"
-        },
-        "value": "xxxxxxxxxxxx"
-    }
+```bash
+curl -s https://ifconfig.me | awk '{print $1}')
 ```
 
-Once you have captured / updated all the parameters in the aka.parameters.json file you can run the deployment.
+Contents for infra.parameter.json
+
+```json
+{
+    "\$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": { 
+          "value": "" 
+          },
+        "projectName": { 
+          "value": "" 
+          },
+        "createdbyTag": { 
+          "value": "" 
+          },
+        "costcenter": { 
+          "value": "" 
+          },
+        "Env": { 
+          "value": "" 
+          },
+        "adminUsername": {
+            "metadata": { "description": "Admin username for the jumpboxes. Must be between 1 and 20 characters long." },
+            "value": ""
+        },
+        "adminPassword": {
+            "metadata": { "description": "Admin password for the jumpboxes. Must be at least 12 characters long and meet complexity requirements." },
+            "value": ""
+        },
+        "existingVNETName": {
+            "metadata": { "description": "Name of the existing VNET" },
+            "value": ""
+        },
+        "existingVnetResourceGroup": {
+            "metadata": { "description": "Resource Group of the existing VNET" },
+            "value": ""
+        },
+        "newSubnetAddressPrefix": {
+            "metadata": { "description": "Address prefix for the new Subnet. Must be a subset of the existing VNET address space. AKS will deploy /27 all you need is the x.x.x.0" },
+            "value": ""
+        },
+        "kubernetes_version": {
+            "metadata": { "description": "Kubernetes version for the AKS Cluster." },
+            "value": "1.33.2"
+        },
+        "clusterDNSprefix": {
+            "metadata": { "description": "Enter the DNS prefix for the AKS Cluster." },
+            "value": ""
+        },
+        "keyVaultName": {
+            "metadata": { "description": "Key Vault Name to store secrets" },
+            "value": ""
+        },
+        "keyName": {
+            "metadata": { "description": "Key Vault Key Name to encrypt secrets" },
+            "value": "aks-cmk"
+        },
+        "userAssignedID": {
+            "metadata": { "description": "User Assigned Managed Identity Name" },
+            "value": ""
+        },
+        "userIDRGName": {
+            "metadata": { "description": "User Assigned Managed Identity Resource Group Name" },
+            "value": ""
+        },
+        "keyVaultAccess": {
+            "metadata": { "description": "Enable Key Vault access via public endpoint or private endpoint" },
+            "value": "Public"
+        },
+        "adminGroupObjectIDs": {
+            "metadata": { "description": "Entra ID Group Object IDs that will be assigned as AKS Admins" },
+            "value": ""
+        },
+        "myIP": {
+            "metadata": { "description": "Your public IP address for the ACR firewall rules" },
+            "value": ""
+            }
+    }
+}
+```
+
+Once you have captured / updated all the parameters in the infra.parameters.json file you can run the deployment.
 
 ** Note that this deployment is a subscription deployment not a resource group deployment
 
 ```json
-az deployment sub create -n test -f  -p 
+az deployment sub create -n <deployment_name> -l <location> -f infra.json -p infra.parameters.json
+
+# if you want to run a test first
+
+az deployment sub create -n <deployment_name> -l <location> -f infra.json -p infra.parameters.json --what-if
 ```
 
 Great, we now have all the resources ready to deploy the Splunk instance.
@@ -339,10 +260,10 @@ Things to verify before we move forward.
 
 ### Configuring the jumbox (Linux)
 
-Moving along lets get the linux jumpbox configured and ready to manage the cluster. Once you have connected to your Linux jumpbox VM, run the following script to download the configuration script.
+Lets get the linux jumpbox configured and ready to manage the cluster. Once you have connected to your Linux jumpbox VM using Bastion, run the following script to download the configuration script.
 
 ```bash
-curl -sLO https://raw.githubusercontent.com/wayneme75/prov/refs/heads/main/setup_lin_jumpbox.sh && bash setup_lin_jumpbox.sh
+curl -sLO https://raw.githubusercontent.com/bravo-box/splunk-on-aks/refs/heads/main/setup_lin_jumpbox.sh && bash setup_lin_jumpbox.sh
 ```
 
 This will setup the following resources on your jumpbox
@@ -352,9 +273,9 @@ This will setup the following resources on your jumpbox
 - Make
 - NetTools
 - KubeLogin
+- Kubectl
 - Git CLI
 - Helm
-- Kubectl
 
 Once the tools are run do an Azure Login to ensure that you are have access to your environment
 
@@ -365,7 +286,7 @@ az login --use-device-code
 az account show
 ```
 
-Now that we have access to the Azure environment from the Azure Linux jumpbox, we will need to get the AKS credentials into our kubeconfig file.
+Now that we have access to the Azure environment from the Azure Linux jumpbox, we will need to get the AKS credentials into your kubeconfig file.
 
 ```bash
 rg=<resource group name>
@@ -375,8 +296,9 @@ az aks get-credentials -n $cn -g $rg
 ```
 
 Should see a message that your cluster details have been merged into your kubeconfig file.
+It should also show the following: convert-kubeconfig -l azurecli
 
-As we have enabled Entra ID on the cluster we will need to ensure that kubelogin is configured correctly. We do this by running the kubelogin command to activate via Az CLI.
+If not, we will need to ensure that kubelogin is configured correctly. We do this by running the kubelogin command to activate via Az CLI.
 
 ```bash
 kubelogin convert-kubeconfig -l azurecli
@@ -396,26 +318,78 @@ kubectl get pods -A
 kubectl cluster-info
 ```
 
-You should be prompted to login in. Once you have logged in, you will be presented with the default namespaces in the cluster.
+You may be prompted to login in. Once you have logged in, you will be presented with the default namespaces in the cluster.
 
-** The Windows jumpbox can be used as well, particularly for the portal. You can log into the azure portal and view the resources in your cluster. Remember as this is a private cluster you cannot see the resources from a machine that is not on the same network
+** The Windows jumpbox can be used as well, particularly for access to the portal. You can log into the azure portal and view the resources in your cluster. 
+
+Remember as this is a private cluster you cannot see the resources from the portal if you are connecting from a machine that outside of your network eg: a home machine that is not on VPN or if you are on a network that is not peered and routed correctly to the network in Azure.
 
 Next you would want to pull the repo for the splunk installation assets down to the jumpbox.
 
 ```bash
-git clone <some url>
+git clone https://github.com/bravo-box/splunk-on-aks.git
 ```
 
 ## Deploying Splunk
+
+### Recommended Auto-deployment
+
+Run these steps from the Linux jumpbox
+
+If you had run the deploy_infra.sh it would have pulled the repo locally to your Azure Container Registry, from here you can make the following ammendments to the deploy_splunk_sok_aks.sh file.
+
+This bash will do a few things:
+
+1. Create a new namespace
+2. Validate all the roles are correct and apply if not
+3. Enable Federated identity and get the URL from AKS cluster
+4. Deploy the necessary Splunk CRDs
+5. Build the Splunk-License ConfigMap which is required for all other services to come online
+6. Add Helm repo and install the chart
+
+To prepare for the run update the following rows in the deploy_splunk_sok_aks.sh to reflect the resources in your Azure environment. NOTE: do not remove the preceding -, just replace the x with your values.
+
+- 55 - Resource Group of the Cluster
+- 56 - AKS Cluster Name
+- 57 - Location of the Cluster
+- 63 - UAMI Resource Group Name
+- 64 - UAMI Name
+- 67 - Storage Account Resource Group
+- 68 - Storage Account Name
+- 85 & 86 - Update your Azure Container Registry URL
+
+Once that has been completed proceed in running the deploy_splunk_sok_aks.sh
+
+```bash
+chmod +x deploy_splunk_sok_aks.sh
+./deploy_splunk_sok_aks.sh
+```
+
+### Manual Deployment Splunk-C3
 
 Firstly lets ensure that we have a namespace deployed to our cluster
 It is our recommendation to keep the default namespace to splunk. If you chose to adjust the namespace you will need to make changes to the script down the way.
 
 ```bash
-kubectl apply -f <path to the git ns.yaml file>
+nano ns.yaml
 
-# Check your newly created namespace
+# copy this into your ns.yaml file
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: busybox
+---
 
+# exit and save the file
+```
+
+```bash
+kubectl apply -f ns.yaml file
+```
+
+### Check your newly created namespace
+
+```bash
 kubectl get ns
 
 # OPTIONAL: Clean up CRDs before moving forward
@@ -423,9 +397,14 @@ kubectl get crds | grep splunk | awk '{print $1}' | xargs kubectl delete crd
 
 # Deploy all the required CRDs
 kubectl apply -f https://github.com/splunk/splunk-operator/releases/download/3.0.0/splunk-operator-crds.yaml --server-side
+```
 
-# Deploy license manager
-# Sample below
+### Create the license manager file
+
+```bash
+nano license.yaml
+
+# copy this into license.yaml
 
 apiVersion: v1
 kind: ConfigMap
@@ -450,39 +429,34 @@ data:
     X29uIG5hbWU9Iml0c2kiIHR5cGU9ImFwcCI+CiAgICAgICAgPHBhcmFtZXRlciBrZXk9InNpemUiIHZhbHVlPSIxMCIvPgogICAgICA8L2FkZF9vbj4KICAgIDwvYWRkX29ucz4KICAgIDxzb3VyY2V0eXBlcy8+CiAgICA8Z3VpZD5DNDky
     NTI5OC0xRjNFLTRGODMtQjVCNC1CNzM0QjRDMzUwMzU8L2d1aWQ+CiAgPC9wYXlsb2FkPgo8L2xpY2Vuc2U+Cg==
 
-
 ```
 
-Now that you have the namespace created and the Azure infrastructure and the files are on the local jumpbox you are almost ready to deploy the Splunk-C3 infra. You will need to update some parameters to match those of your Azure resources.
-
-In the bash script called blah.sh update the following rows to reflect the resources in your Azure environment. NOTE: do not remove the preceding -
-
-- Row 46 - enter your resource group name
-- Row 47 - name of your AKS cluster
-- Row 48 - location / region of your resources
-- Row 51 - the namespace you are deploying to
-- Row 54 - resource group for your managed identity
-- Row 55 - name of your managed identity
-- Row 58 - resource group for your storage account
-- Row 59 - the name of the storage account
-
-Ensure that you are logged into Azure CLI prior to running the bash script for the Splunk implementation. To verify you can run the following:
-
-```cli
-az account show
-```
-
-If you are logged in proceed to run the bash script for the Splunk implementation
-
-### NEED TO GET THE CRDS FOR THE INSTALL
+### Apply the license file
 
 ```bash
-bash splunk_script_filename.sh
+kubectl apply -f license.yaml
 ```
 
-The script will give you an output that all has been completed, to verify:
+Now that you have the namespace created, the CRDs are applyed and the license config map are in place you are almost ready to deploy the Splunk-C3 infra.
 
-```cli
+### Adding the HELM repo
+
+```bash
+helm repo add splunk https://splunk.github.io/splunk-operator
+helm repo update
+
+helm install splunk-c3 3.0.0 -n splunk
+```
+
+**The below step is important to tag the splunk-operator-controller-manager to use the azure workload identity.**
+
+```bash
+kubectl label sa splunk-operator-controller-manager -n "splunk" azure.workload.identity/use=true --overwrite
+```
+
+Now that your environment has been deployed it you can check to see the pods that have been created.
+
+```bash
 kubectl get pods -n splunk
 ```
 
@@ -491,13 +465,13 @@ You will see the pods starting to come online. This can take around 45min for al
 In the interim you can test to see that your connection to the storage account is working.
 
 ```cli
-kubectl get pods -n <name of namespace>
+kubectl get pods -n splunk
 
 # look for the name of the splunk-operator-controller-manager pod. It will have a series of numbers and characters behind it
 
 kubectl logs splunk-operator-controller-manager-xsdfsfe32 -n splunk | grep -i azure
 
-# you should see connection to the storage account and successfully pulled down apps
+# you should see a successful connection to the storage account 
 ```
 
 You should now have a fully running and operational Splunk instance inside AKS. You should eventually see the following running pods:
@@ -513,8 +487,21 @@ You should now have a fully running and operational Splunk instance inside AKS. 
 - splunk-sh-search-head-1
 - splunk-sh-search-head-2
 
-Now to finalize this deployment we will need to deploy ingress controllers so that you can federate and manage the environment.
-For this we will use a combination of nginx and Azure Load Balanecer. Both of these services are configured as internal and connected to our existing subnet which we created in the infrastructure deployment.
+## Deploying ingress controllers
+
+### Automated deployment of ingress
+
+The automated bash file will be here.
+
+```bash
+# edit the bash with you IPs and subnet
+
+```
+
+### Manual deployment of ingress
+
+Now to finalize this deployment we will need to deploy ingress controllers and load balancer so that you can federate and manage the environment.
+For this we will use a combination of nginx and Azure Load Balancer. Both of these services are configured as internal and connected to our existing subnet which we created in the infrastructure deployment.
 One of the prerequisites for the configuration he is for our User Assignd Managed Identity to have network contributor role, this is so that IPs can be assigned to ingress services.. In keeping with the least privledge princple, we could not create the role assignment earlier as the subnet had not been created. You can do this through the portal by going to the subnet, selecting the 3 dots ... to the right on the blade and selecting managing users.
 Here is the Azure CLI to perform this:
 
