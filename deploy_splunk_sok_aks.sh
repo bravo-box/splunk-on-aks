@@ -20,14 +20,14 @@
 #   DELETE_NAMESPACE=true DELETE_UAI=false DELETE_STORAGE_ACCOUNT=false bash deploy_splunk_sok_aks.sh delete
 #
 # Before running, make updates to the following rows:
-#  48 - Resource Group of the Cluster
-#  49 - AKS Cluster Name
-#  52 - Location of the Cluster
-#  60 - UAMI Resource Group Name
-#  61 - UAMI Name
-#  65 - Storage Account Resource Group
-#  66 - Storage Account Name
-#  84 & 85 - Update your Azure Container Registry URL
+#  55 - Resource Group of the Cluster
+#  56 - AKS Cluster Name
+#  57 - Location of the Cluster
+#  63 - UAMI Resource Group Name
+#  64 - UAMI Name
+#  67 - Storage Account Resource Group
+#  68 - Storage Account Name
+#  85 & 86 - Update your Azure Container Registry URL
 # Customize the section "CUSTOMER VARIABLES" below.
 # =============================================================================
 
@@ -52,20 +52,20 @@ need() { command -v "$1" >/dev/null 2>&1 || { err "Missing tool: $1"; exit 1; };
 SUB="${SUB:-}"
 
 # AKS cluster details
-CLUSTER_RG="${CLUSTER_RG:-rg-lotus}"
-CLUSTER_NAME="${CLUSTER_NAME:-lotus-aks}"
-LOCATION="${LOCATION:-usgovvirginia}"            # e.g., westus2, eastus, westeurope
+CLUSTER_RG="${CLUSTER_RG:-x}"
+CLUSTER_NAME="${CLUSTER_NAME:-x}"
+LOCATION="${LOCATION:-x}"            # e.g., westus2, eastus, westeurope, usgovvirginia
 
 # Kubernetes namespace for operator & Splunk CRs
 NAMESPACE="${NAMESPACE:-splunk}"
 
 # UAMI resource group + name (create/reuse)
-ID_RG="${ID_RG:-rg-lotus-shared}"
-UAI_NAME="${UAI_NAME:-lotus-uami}"
+ID_RG="${ID_RG:-x}"
+UAI_NAME="${UAI_NAME:-x}"
 
 # Storage for Splunk App Framework (create/reuse)
-APP_STORAGE_RG="${APP_STORAGE_RG:-rg-lotus-shared}"
-APP_STORAGE_ACCOUNT="${APP_STORAGE_ACCOUNT:-stlotus01}"   # DNS prefix only; endpoint becomes https://$APP_STORAGE_ACCOUNT.$APP_STORAGE_ENDPOINT_SUFFIX
+APP_STORAGE_RG="${APP_STORAGE_RG:-x}"
+APP_STORAGE_ACCOUNT="${APP_STORAGE_ACCOUNT:-x}"   # DNS prefix only; endpoint becomes https://$APP_STORAGE_ACCOUNT.$APP_STORAGE_ENDPOINT_SUFFIX
 
 # Containers + prefixes (directory-like) for app repos
 APP_CONTAINER_CM="${APP_CONTAINER_CM:-custom-apps}"
@@ -82,8 +82,8 @@ HELM_CHART_VERSION="${HELM_CHART_VERSION:-3.0.0}"   # set "" to use latest from 
 HELM_SKIP_REPO_UPDATE="${HELM_SKIP_REPO_UPDATE:-false}"
 
 # Images (override as needed)
-SPLUNK_IMAGE="${SPLUNK_IMAGE:-lotusacr.azurecr.us/splunk/splunk:9.4.5}"
-OPERATOR_IMAGE="${OPERATOR_IMAGE:-lotusacr.azurecr.us/splunk/splunk-operator:3.0.0}"
+SPLUNK_IMAGE="${SPLUNK_IMAGE:-x.azurecr.us/splunk/splunk:9.4.5}"
+OPERATOR_IMAGE="${OPERATOR_IMAGE:-x.azurecr.us/splunk/splunk-operator:3.0.0}"
 
 # Output values.yaml
 VALUES_FILE="${VALUES_FILE:-$(pwd)/values-azure.yaml}"
