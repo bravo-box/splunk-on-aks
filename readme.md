@@ -18,6 +18,10 @@ The jumpstart architecture we are building is comprised of:
 - Storage Account for the cluster and Splunk Apps
 - User Assigned Managed Identity for cluster operations
 
+## Assumptions
+
+It is assumed that there is a vNet already in place and that you have an Azure Bastion service already enabled for connectivity to the VMs. If these are not present, you will need to create before proceeding.
+
 ## Deploying the prerequisites
 
 These tasks can be done either through cli, powershell or the portal.
@@ -48,8 +52,7 @@ You will be prompted for the following, you can chose not to deploy the RG, KV, 
 13. Tag Cost Center, if you dont use press enter and it will assign n/a
 14. Tag Env, this is Dev, Test, Prod. If you dont use tags then enter to skip it will add n/a
 
-### Assumptions
-It is assumed that there is a vNet already in place and that you have an Azure Bastion service already enabled for connectivity to the VMs. If these are not present, you will need to create before proceeding.
+
 
 ### Creating the keyVault
 

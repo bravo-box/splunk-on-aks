@@ -299,6 +299,12 @@ fi
       read -rp "Project Name cannot be empty. Please enter your project Name: " PROJECT_NAME
     done
 
+    # List all vNets in the subscription that are bound to the location specified
+    echo "Existing vNets in location '$LOCATION':"
+    VNET_LIST=$(az network vnet list --query "[?location=='$LOCATION'].{Name:name, ResourceGroup:resourceGroup}" -o table)
+    echo "vNets that you can use for your AKS Private Cluster based in the location $LOCATION:"
+    echo "$VNET_LIST"
+
     # vNet name for your AKS Private Cluster
     read -rp "Enter the name of your existing VNet (e.g., vnet1): " existingVNETName
     while [[ -z "$existingVNETName" ]]; do
