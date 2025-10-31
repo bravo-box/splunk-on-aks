@@ -20,7 +20,25 @@ The jumpstart architecture we are building is comprised of:
 
 ## Assumptions
 
-It is assumed that there is a vNet already in place and that you have an Azure Bastion service already enabled for connectivity to the VMs. If these are not present, you will need to create before proceeding.
+It is assumed that there is a vNet already in place and that you have an Azure Bastion service already enabled for connectivity to the jumbox VMs. If these are not present, you will need to create before proceeding.
+
+Here is a simple example if you dont have a vNet or Bastion as yet.
+
+```json
+az network vnet create \
+    --resource-group <resource-group-name> \
+    --name <vnet-name> \
+    --address-prefixes <vnet-address-prefix> \
+    --location <location>
+
+az network bastion create \
+  --location <region> \
+  --name <bastion-host-name> \
+  --public-ip-address <public-ip-address-name> \
+  --resource-group <resource-group-name> \
+  --vnet-name <virtual-network-name> \
+  --sku Standard
+```
 
 ## Deploying the prerequisites
 
@@ -44,15 +62,13 @@ You will be prompted for the following, you can chose not to deploy the RG, KV, 
 5. Storage Account name - same as above, it will append the 10 digit random number. Note storage accounts can only accecpt alpah numeric, no special characters.
 6. User Assigned Managed Identity (UAMI). You can chose to use an existing UAMI if you have one
 7. Project name - this is name that will be used to name all resources in this deployment. Should be greater than 5 characters and no spaces or special characters eg: alpha
-8. Existing vNet name
-9. Enter the IP address space for the cluster. By default this deployment will provision a /27. You only need to enter the x.x.x.x eg: 10.0.1.0
+8. Existing vNet name (we will detect the resource group name and present the subnets and address space that are already in the vNet)
+9. Enter the IP address space for the cluster. By default this deployment will provision a /27. You only need to enter the x.x.x.x eg: 10.0.1.0.
 10. Enter the username for your jumpboxes
 11. Enter the password for the jumboxes
-12. Group ID from Entra. This is a group that will be used to manage access to the AKS Cluster
+12. Group ID from Entra. This is a group that will be used to manage access to the AKS Cluster. You can get this from Entra ID
 13. Tag Cost Center, if you dont use press enter and it will assign n/a
 14. Tag Env, this is Dev, Test, Prod. If you dont use tags then enter to skip it will add n/a
-
-
 
 ### Creating the keyVault
 
