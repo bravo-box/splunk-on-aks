@@ -6,13 +6,17 @@ https://learn.microsoft.com/en-us/azure/aks/core-aks-concepts
 
 https://learn.microsoft.com/en-us/azure/architecture/reference-architectures/containers/aks-mission-critical/mission-critical-intro
 
+If you are looking for Splunk Operator GitHub reference: https://github.com/splunk/splunk-operator/tree/main/docs
+
+This quickstart can be deployed either using the bash wrapper scripts for the Azure Infrastrucutre (deploy_infra.sh) and the Splunk deployment (deploy_splunk_sok_aks.sh). Or you can do a manual deployment which we have provided the various scripts below. Our recommended approach would be to use the bash scripts.
+
 The jumpstart architecture we are building is comprised of:
 
-- Azure Kubernetes Service deployed as a private cluster
+- Azure Kubernetes Service deployed as a private cluster, FIPS enabled with 2 node pools and Entra ID integrated.
 - Azure Container Registry with a private endpoint and private DNS zone
 - Deploys a subnet to an existing vNet and creates network security group and route table
-- Two jumpboxes deployed to the same subnet, one Linux and one Windows to do AKS administration as it is deployed as a private cluster.
-- Bash script to provision the Linux box post deployment
+- Two jumpboxes deployed to the same subnet as the AKS cluster, one Linux and one Windows. These are to do AKS administration as it is deployed as a private cluster. If your Azure networking is already connected to your deployment machine you likely will not need these.
+- Bash script to provision the Linux box post deployment. The enables all the tools required (Az CLI, GH CLI, Helm, Net Tools, KubeCtl, Kubelogin)
 - Bash script to deploy Splunk-C3 reference architecture to AKS.
 - KeyVault
 - Storage Account for the cluster and Splunk Apps
@@ -40,7 +44,7 @@ az network bastion create \
   --sku Standard
 ```
 
-## Automated Deployment for the Infrastructure
+## Automated Deployment for the Infrastructure (Recommended)
 
 These tasks can be done either through cli, powershell or the portal.
 Througout this post will share the az cli commands that you can run to do the manual configs. We have also provided a full bash script that will build the entire infrastructure for you.
@@ -258,7 +262,7 @@ Things to verify before we move forward.
 1. In the AKS cluster check the security settings have your group identity attached. You may need to change the drop down to Entra ID and kubernetes RBAC for it to be displayed.
 2. Verify that OIDC and workload identity are enabled on the cluster, this can be found on the security configuration tab.
 
-### Configuring the jumbox (Linux)
+## Configuring the jumbox (Linux)
 
 Lets get the linux jumpbox configured and ready to manage the cluster. Once you have connected to your Linux jumpbox VM using Bastion, run the following script to download the configuration script.
 
@@ -365,6 +369,11 @@ chmod +x deploy_splunk_sok_aks.sh
 ./deploy_splunk_sok_aks.sh
 ```
 
+Once this completes you can check the status of you Splunk roll-out, proceed to the section in the document "Checking your Deployment"
+
+
+You should see the pods coming online, this will take around 30-45 minutes for all to be ready.
+
 ### Manual Deployment Splunk-C3
 
 Firstly lets ensure that we have a namespace deployed to our cluster
@@ -453,6 +462,8 @@ helm install splunk-c3 3.0.0 -n splunk
 ```bash
 kubectl label sa splunk-operator-controller-manager -n "splunk" azure.workload.identity/use=true --overwrite
 ```
+
+## Checking your deployment
 
 Now that your environment has been deployed it you can check to see the pods that have been created.
 
