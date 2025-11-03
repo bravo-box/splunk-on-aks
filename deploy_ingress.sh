@@ -22,7 +22,7 @@ LB_FILE="$(pwd)/federation-ingress.yaml" # Path to the federation ingress values
 
 # Select which Ingress to deploy, Web Ingress, Federation Ingress, or both
 echo "----------------------------------------------"
-echo "Do you want to deploy both Web Ingress (y/n)"
+echo "Starting deployment of Web Ingress"
 echo "----------------------------------------------"
 # --- DEPLOY WEB INGRESS (y/n) ---
 while true; do
@@ -188,6 +188,9 @@ echo "✅ Ingress configuration file generated at $NGINX_CONFIG_FILE"
 done
 
 # --- DEPLOY FEDERATION INGRESS (y/n) ---
+echo "----------------------------------------------"
+echo "Starting deployment of Federation Ingress"
+echo "----------------------------------------------"
 while true; do
   echo "----------------------------------------------"
   read -r -p "Do you want to deploy a Federation Ingress (Load Balancer)? (y/n): " deploy_FederationIngress
