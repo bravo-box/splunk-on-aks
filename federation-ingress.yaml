@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: splunk-lb
+  namespace: splunk
+  labels:
+    azure.workload.identity/use: "true"
+  annotations: 
+    service.beta.kubernetes.io/azure-load-balancer-internal: "true"
+spec:
+  type: LoadBalancer
+  loadBalancerIP: x.x.x.x #update the IP address to your desired static IP within the subnet range
+  selector:
+    app.kubernetes.io/instance: splunk-sh-deployer
+    app.kubernetes.io/component: search-head
+    app.kubernetes.io/name: deployer
+    app.kubernetes.io/part-of: splunk-sh-search-head
+  ports:
+    - name: splunk-lb-port
+      protocol: TCP
+      port: 8089
+      targetPort: 8089
+  sessionAffinity: None
+  externalTrafficPolicy: Cluster
+  ipFamilies:
+    - IPv4
+  ipFamilyPolicy: SingleStack
+  allocateLoadBalancerNodePorts: true
+  internalTrafficPolicy: Cluster
