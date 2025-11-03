@@ -36,8 +36,6 @@ controller:
   service:
     type: LoadBalancer
     loadBalancerIP: "$WEB_IP"
-    labels:
-      azure.workload.identity/use: "true"
     annotations:
       service.beta.kubernetes.io/azure-load-balancer-internal: "true"
       service.beta.kubernetes.io/azure-load-balancer-ipv4: "$WEB_IP"
