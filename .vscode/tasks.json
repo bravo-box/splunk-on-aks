@@ -80,16 +80,6 @@
             },
             "problemMatcher": [],
             "detail": "Deploy Splunk on AKS for the blog demo"
-        },
-        {
-            "label": "Run All Deployment Tasks",
-            "dependsOrder": "sequence",
-            "dependsOn": [
-                "Run deploy_infra.sh",
-                "Run deploy_splunk_sok_aks_blog.sh"
-            ],
-            "group": "build",
-            "detail": "Run infrastructure deployment followed by Splunk deployment"
         }
     ]
 }
