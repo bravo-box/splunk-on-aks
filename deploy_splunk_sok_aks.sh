@@ -64,8 +64,8 @@ ID_RG="${ID_RG:-rg-pulse-shared}"
 UAI_NAME="${UAI_NAME:-pulse-uami}"
 
 # Storage for Splunk App Framework (create/reuse)
-APP_STORAGE_RG="${APP_STORAGE_RG:-stpulsee213b8a878}"
-APP_STORAGE_ACCOUNT="${APP_STORAGE_ACCOUNT:-rg-pulse-shared}"   # DNS prefix only; endpoint becomes https://$APP_STORAGE_ACCOUNT.$APP_STORAGE_ENDPOINT_SUFFIX
+APP_STORAGE_RG="${APP_STORAGE_RG:-rg-pulse-shared}"
+APP_STORAGE_ACCOUNT="${APP_STORAGE_ACCOUNT:-stpulsee213b8a878}"   # DNS prefix only; endpoint becomes https://$APP_STORAGE_ACCOUNT.$APP_STORAGE_ENDPOINT_SUFFIX
 
 # Containers + prefixes (directory-like) for app repos
 APP_CONTAINER_CM="${APP_CONTAINER_CM:-custom-apps}"
