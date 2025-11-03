@@ -10,9 +10,9 @@ set -e
 # --------------------------------------------------
 # Variables
 # --------------------------------------------------
-WEB_IP="x.x.x.x"
-LB_IP="y.y.y.y"
-SUBNET_NAME="my-subnet"
+WEB_IP="10.0.28.13"
+LB_IP="10.0.28.14"
+SUBNET_NAME="pulse-aks-subnet"
 FQDN="demo.com"
 
 NGINX_VALUES_FILE="$(pwd)/values-nginx-ingress.yaml" # Path to the custom values file
