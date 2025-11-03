@@ -526,9 +526,15 @@ echo "----------------------------------------------"
 echo "✅ ARM deployment completed: $DEPLOYMENT_NAME"
 echo "----------------------------------------------"
 
-# Assign Network Contributor role to UAMI for AKS Ingress deployments
+# Assign Network Contributor and Reader role to UAMI for AKS Ingress deployments
 echo "Assigning network role to the UAMI for AKS Ingress deployments..."
     # --- NETWORK ROLE ---
+    # Get vNet ID
+    VNET_ID=$(az network vnet show \
+    -g "$existingVnetResourceGroup" \
+    -n "$existingVNETName" \
+    --query "id" -o tsv)
+
     # Get subnet ID
     SUBNET_ID=$(az network vnet subnet show \
     -g "$existingVnetResourceGroup" \
@@ -542,8 +548,14 @@ echo "Assigning network role to the UAMI for AKS Ingress deployments..."
     --role "Network Contributor" \
     --scope "$SUBNET_ID"
 
+    # Assign role to the UAMI
+    az role assignment create \
+    --assignee "$UAMI_PRINCIPAL_ID" \
+    --role "Reader" \
+    --scope "$VNET_ID"
+
     echo "----------------------------------------------"
-    echo "  ✅ Assigned 'Network Contributor' on $PROJECT_NAME-aks-snet"
+    echo "  ✅ Assigned 'Network Contributor' and 'Reader' roles on $PROJECT_NAME-aks-snet"
     echo "----------------------------------------------"
 
 # Assign ACR Pull role to UAMI for AKS ACR access
