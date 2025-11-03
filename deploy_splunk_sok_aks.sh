@@ -52,20 +52,20 @@ need() { command -v "$1" >/dev/null 2>&1 || { err "Missing tool: $1"; exit 1; };
 SUB="${SUB:-}"
 
 # AKS cluster details
-CLUSTER_RG="${CLUSTER_RG:-x}"
-CLUSTER_NAME="${CLUSTER_NAME:-x}"
-LOCATION="${LOCATION:-x}"            # e.g., westus2, eastus, westeurope, usgovvirginia
+CLUSTER_RG="${CLUSTER_RG:-rg-pulse}"
+CLUSTER_NAME="${CLUSTER_NAME:-pulse-aks}"
+LOCATION="${LOCATION:-usgovvirginia}"            # e.g., westus2, eastus, westeurope, usgovvirginia
 
 # Kubernetes namespace for operator & Splunk CRs
 NAMESPACE="${NAMESPACE:-splunk}"
 
 # UAMI resource group + name (create/reuse)
-ID_RG="${ID_RG:-x}"
-UAI_NAME="${UAI_NAME:-x}"
+ID_RG="${ID_RG:-rg-pulse-shared}"
+UAI_NAME="${UAI_NAME:-pulse-uami}"
 
 # Storage for Splunk App Framework (create/reuse)
-APP_STORAGE_RG="${APP_STORAGE_RG:-x}"
-APP_STORAGE_ACCOUNT="${APP_STORAGE_ACCOUNT:-x}"   # DNS prefix only; endpoint becomes https://$APP_STORAGE_ACCOUNT.$APP_STORAGE_ENDPOINT_SUFFIX
+APP_STORAGE_RG="${APP_STORAGE_RG:-stpulsee213b8a878}"
+APP_STORAGE_ACCOUNT="${APP_STORAGE_ACCOUNT:-rg-pulse-shared}"   # DNS prefix only; endpoint becomes https://$APP_STORAGE_ACCOUNT.$APP_STORAGE_ENDPOINT_SUFFIX
 
 # Containers + prefixes (directory-like) for app repos
 APP_CONTAINER_CM="${APP_CONTAINER_CM:-custom-apps}"
@@ -82,8 +82,8 @@ HELM_CHART_VERSION="${HELM_CHART_VERSION:-3.0.0}"   # set "" to use latest from 
 HELM_SKIP_REPO_UPDATE="${HELM_SKIP_REPO_UPDATE:-false}"
 
 # Images (override as needed)
-SPLUNK_IMAGE="${SPLUNK_IMAGE:-x.azurecr.us/splunk/splunk:9.4.5}"
-OPERATOR_IMAGE="${OPERATOR_IMAGE:-x.azurecr.us/splunk/splunk-operator:3.0.0}"
+SPLUNK_IMAGE="${SPLUNK_IMAGE:-pulseacrlbjbnlavfq.azurecr.us/splunk/splunk:9.4.5}"
+OPERATOR_IMAGE="${OPERATOR_IMAGE:-pulseacrlbjbnlavfq.azurecr.us/splunk/splunk-operator:3.0.0}"
 
 # Output values.yaml
 VALUES_FILE="${VALUES_FILE:-$(pwd)/values-azure.yaml}"

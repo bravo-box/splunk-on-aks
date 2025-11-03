@@ -502,7 +502,7 @@ You should now have a fully running and operational Splunk instance inside AKS. 
 
 ### Automated deployment of ingress
 
-The automated bash file will be here.
+Coming Soon !
 
 ```bash
 # edit the bash with you IPs and subnet

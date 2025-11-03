@@ -7,6 +7,9 @@ set -e
 # WebIP is for the Splunk Web Interface
 # LoadBalancerIP is for the Load Balancer service for Federation
 
+# --------------------------------------------------
+# Variables
+# --------------------------------------------------
 WEB_IP="x.x.x.x"
 LB_IP="y.y.y.y"
 SUBNET_NAME="my-subnet"
@@ -44,17 +47,22 @@ EOF
 
 echo "✅ Custom nginx ingress values file generated at $NGINX_VALUES_FILE"
 
-            # Step 1: Install nginx ingress controller with Helm and custom values
-            echo "Installing nginx ingress controller with Helm..."
-            helm install splunk-nginx oci://ghcr.io/nginx/charts/nginx-ingress \
-              --version 2.2.2 \
-              --namespace splunk \
-              --create-namespace \
-              -f $NGINX_VALUES_FILE
+    # Step 1: Install nginx ingress controller with Helm and custom values
+    echo "Installing nginx ingress controller with Helm..."
+    helm install splunk-nginx oci://ghcr.io/nginx/charts/nginx-ingress \
+      --version 2.2.2 \
+      --namespace splunk \
+      --create-namespace \
+      -f $NGINX_VALUES_FILE
 
-            echo "Waiting for nginx ingress controller pods to be ready..."
-            kubectl rollout status deployment/splunk-nginx-nginx-ingress-controller -n splunk --timeout=180s || true
-            echo "✅ nginx ingress controller rollout completed successfully."
+    echo "Waiting for nginx ingress controller pods to be ready..."
+            if kubectl rollout status deployment/splunk-nginx-nginx-ingress-controller -n splunk --timeout=180s; then
+                echo "✅ nginx ingress controller rollout completed successfully."
+            else
+                echo "❌ nginx ingress controller failed to deploy or timed out."
+                kubectl get pods -n splunk -l app.kubernetes.io/name=nginx-ingress --no-headers
+                exit 1
+            fi
 
 echo "----------------------------------------------"
 echo "Starting configuration of nginx ingress controller..."
