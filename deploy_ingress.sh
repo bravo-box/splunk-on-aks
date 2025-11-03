@@ -8,6 +8,7 @@ set -e
 WEB_IP="10.0.28.13"
 LB_IP="10.0.28.14"
 SUBNET_NAME="pulse-aks-subnet"
+SUBNET_RG="networking-rg"
 FQDN="demo.com"
 
 NGINX_VALUES_FILE="$(pwd)/values-nginx-ingress.yaml"
@@ -40,6 +41,7 @@ controller:
       service.beta.kubernetes.io/azure-load-balancer-internal: "true"
       service.beta.kubernetes.io/azure-load-balancer-ipv4: "$WEB_IP"
       service.beta.kubernetes.io/azure-load-balancer-internal-subnet: "$SUBNET_NAME"
+      service.beta.kubernetes.io/azure-load-balancer-internal-subnet-resource-group: "$SUBNET_RG"
     externalTrafficPolicy: Local
     internalTrafficPolicy: Cluster
     allocateLoadBalancerNodePorts: true
