@@ -24,13 +24,30 @@ LB_FILE="$(pwd)/federation-ingress.yaml" # Path to the federation ingress values
 echo "----------------------------------------------"
 echo "Do you want to deploy both Web Ingress (y/n)"
 echo "----------------------------------------------"
-select deploy_WebIngress in "y" "n"; do
-    case $deploy_WebIngress in
-        y )
-            DEPLOY_WEB_INGRESS=true
-            echo "Starting deployment of nginx ingress controller..."
+# --- DEPLOY WEB INGRESS (y/n) ---
+while true; do
+  read -r -p "Do you want to deploy the Web Ingress? (y/n): " deploy_WebIngress
+  deploy_WebIngress=${deploy_WebIngress,,}   # normalize to lowercase
 
-            cat > $NGINX_VALUES_FILE <<EOF
+  case "$deploy_WebIngress" in
+    y|yes)
+      DEPLOY_WEB_INGRESS=true
+      echo "Starting deployment of nginx ingress controller..."
+      # (your ingress deployment logic here)
+      break
+      ;;
+    n|no)
+      DEPLOY_WEB_INGRESS=false
+      echo "Skipping nginx ingress deployment."
+      break
+      ;;
+    *)
+      echo "Please answer y or n."
+      ;;
+  esac
+done
+
+cat > $NGINX_VALUES_FILE <<EOF
 controller:
   service:
     type: LoadBalancer
@@ -43,17 +60,16 @@ controller:
     internalTrafficPolicy: Cluster
     allocateLoadBalancerNodePorts: true
   enableSnippets: true
+  ports:
+    http: 80
+    https: 443
 EOF
 
 echo "✅ Custom nginx ingress values file generated at $NGINX_VALUES_FILE"
 
     # Step 1: Install nginx ingress controller with Helm and custom values
     echo "Installing nginx ingress controller with Helm..."
-    helm install splunk-nginx oci://ghcr.io/nginx/charts/nginx-ingress \
-      --version 2.2.2 \
-      --namespace splunk \
-      --create-namespace \
-      -f $NGINX_VALUES_FILE
+    helm install splunk-nginx oci://ghcr.io/nginx/charts/nginx-ingress --version 2.2.2 --namespace splunk -f $NGINX_VALUES_FILE
 
     echo "Waiting for nginx ingress controller pods to be ready..."
             if kubectl rollout status deployment/splunk-nginx-nginx-ingress-controller -n splunk --timeout=180s; then
@@ -64,6 +80,10 @@ echo "✅ Custom nginx ingress values file generated at $NGINX_VALUES_FILE"
                 exit 1
             fi
 
+echo "Waiting an additional 60 seconds to ensure services are up..."
+sleep 60
+
+
 echo "----------------------------------------------"
 echo "Starting configuration of nginx ingress controller..."
 echo "----------------------------------------------"
@@ -72,7 +92,7 @@ cat > $NGINX_CONFIG_FILE <<EOF
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: splunk-ingress
+  name: splunk-web
   namespace: splunk
 spec:
   ingressClassName: nginx
@@ -94,7 +114,7 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: splunk-heavy-forwarder-standalone-service
+            name: splunk-hf-standalone-service
             port: 
               number: 8000
   - host: deployer.splunk.$FQDN
@@ -167,17 +187,16 @@ echo "✅ Ingress configuration file generated at $NGINX_CONFIG_FILE"
     esac
 done
 
-echo "----------------------------------------------"
-echo "Do you want to deploy a Federation Ingress (Load Balancer)? (y/n)"
-echo "----------------------------------------------"
-read -r deploy_FederationIngress
+# --- DEPLOY FEDERATION INGRESS (y/n) ---
+while true; do
+  echo "----------------------------------------------"
+  read -r -p "Do you want to deploy a Federation Ingress (Load Balancer)? (y/n): " deploy_FederationIngress
+  deploy_FederationIngress=${deploy_FederationIngress,,}   # normalize input to lowercase
 
-# Normalize input (handle uppercase Y/N too)
-deploy_FederationIngress=${deploy_FederationIngress,,}
-
-if [[ "$deploy_FederationIngress" == "y" ]]; then
-    DEPLOY_FEDERATION_INGRESS=true
-    echo "Starting deployment of the Federation ingress (Load Balancer) controller..."
+  case "$deploy_FederationIngress" in
+    y|yes)
+      DEPLOY_FEDERATION_INGRESS=true
+      echo "Starting deployment of the Federation ingress (Load Balancer) controller..."
 
     cat > $LB_FILE <<EOF
 apiVersion: v1
