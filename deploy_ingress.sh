@@ -2,11 +2,6 @@
 
 set -e
 
-# Setting the variables for the Ingress deployment
-# Make sure to replace LOADBALANCER_IP_ and SUBNET_ in values-nginx-ingress.yaml before running this script
-# WebIP is for the Splunk Web Interface
-# LoadBalancerIP is for the Load Balancer service for Federation
-
 # --------------------------------------------------
 # Variables
 # --------------------------------------------------
@@ -15,16 +10,17 @@ LB_IP="10.0.28.14"
 SUBNET_NAME="pulse-aks-subnet"
 FQDN="demo.com"
 
-NGINX_VALUES_FILE="$(pwd)/values-nginx-ingress.yaml" # Path to the custom values file
-NGINX_CONFIG_FILE="$(pwd)/nginx-config.yaml" # Path to the ingress configuration file
-LB_FILE="$(pwd)/federation-ingress.yaml" # Path to the federation ingress values file
+NGINX_VALUES_FILE="$(pwd)/values-nginx-ingress.yaml"
+NGINX_CONFIG_FILE="$(pwd)/nginx-config.yaml"
+LB_FILE="$(pwd)/federation-ingress.yaml"
 
-
-# Select which Ingress to deploy, Web Ingress, Federation Ingress, or both
+# --------------------------------------------------
+# --- DEPLOY WEB INGRESS (y/n) ---
+# --------------------------------------------------
 echo "----------------------------------------------"
 echo "Starting deployment of Web Ingress"
 echo "----------------------------------------------"
-# --- DEPLOY WEB INGRESS (y/n) ---
+
 while true; do
   read -r -p "Do you want to deploy the Web Ingress? (y/n): " deploy_WebIngress
   deploy_WebIngress=${deploy_WebIngress,,}   # normalize to lowercase
@@ -33,21 +29,9 @@ while true; do
     y|yes)
       DEPLOY_WEB_INGRESS=true
       echo "Starting deployment of nginx ingress controller..."
-      # (your ingress deployment logic here)
-      break
-      ;;
-    n|no)
-      DEPLOY_WEB_INGRESS=false
-      echo "Skipping nginx ingress deployment."
-      break
-      ;;
-    *)
-      echo "Please answer y or n."
-      ;;
-  esac
-done
 
-cat > $NGINX_VALUES_FILE <<EOF
+      # Step 1: Create custom values.yaml
+      cat > "$NGINX_VALUES_FILE" <<EOF
 controller:
   service:
     type: LoadBalancer
@@ -65,30 +49,28 @@ controller:
     https: 443
 EOF
 
-echo "✅ Custom nginx ingress values file generated at $NGINX_VALUES_FILE"
+      echo "✅ Custom nginx ingress values file generated at $NGINX_VALUES_FILE"
 
-    # Step 1: Install nginx ingress controller with Helm and custom values
-    echo "Installing nginx ingress controller with Helm..."
-    helm install splunk-nginx oci://ghcr.io/nginx/charts/nginx-ingress --version 2.2.2 --namespace splunk -f $NGINX_VALUES_FILE
+      # Step 2: Install nginx ingress controller
+      helm install splunk-nginx oci://ghcr.io/nginx/charts/nginx-ingress \
+        --version 2.2.2 \
+        --namespace splunk \
+        -f "$NGINX_VALUES_FILE"
 
-    echo "Waiting for nginx ingress controller pods to be ready..."
-            if kubectl rollout status deployment/splunk-nginx-nginx-ingress-controller -n splunk --timeout=180s; then
-                echo "✅ nginx ingress controller rollout completed successfully."
-            else
-                echo "❌ nginx ingress controller failed to deploy or timed out."
-                kubectl get pods -n splunk -l app.kubernetes.io/name=nginx-ingress --no-headers
-                exit 1
-            fi
+      echo "Waiting for nginx ingress controller pods to be ready..."
+      if kubectl rollout status deployment/splunk-nginx-nginx-ingress-controller -n splunk --timeout=180s; then
+          echo "✅ nginx ingress controller rollout completed successfully."
+      else
+          echo "❌ nginx ingress controller failed to deploy or timed out."
+          kubectl get pods -n splunk -l app.kubernetes.io/name=nginx-ingress --no-headers
+          exit 1
+      fi
 
-echo "Waiting an additional 60 seconds to ensure services are up..."
-sleep 60
+      echo "Waiting an additional 60 seconds to ensure services are up..."
+      sleep 60
 
-
-echo "----------------------------------------------"
-echo "Starting configuration of nginx ingress controller..."
-echo "----------------------------------------------"
-
-cat > $NGINX_CONFIG_FILE <<EOF
+      # Step 3: Generate ingress configuration
+      cat > "$NGINX_CONFIG_FILE" <<EOF
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -105,8 +87,8 @@ spec:
         backend:
           service:
             name: splunk-sh-search-head-service
-            port: 
-              number: 8000 
+            port:
+              number: 8000
   - host: hf.splunk.$FQDN
     http:
       paths:
@@ -115,7 +97,7 @@ spec:
         backend:
           service:
             name: splunk-hf-standalone-service
-            port: 
+            port:
               number: 8000
   - host: deployer.splunk.$FQDN
     http:
@@ -125,7 +107,7 @@ spec:
         backend:
           service:
             name: splunk-sh-deployer-service
-            port: 
+            port:
               number: 8000
   - host: cluster-manager.splunk.$FQDN
     http:
@@ -135,7 +117,7 @@ spec:
         backend:
           service:
             name: splunk-cm-cluster-manager-service
-            port: 
+            port:
               number: 8000
   - host: license-manager.splunk.$FQDN
     http:
@@ -145,7 +127,7 @@ spec:
         backend:
           service:
             name: splunk-lm-license-manager-service
-            port: 
+            port:
               number: 8000
   - host: mc.splunk.$FQDN
     http:
@@ -155,7 +137,7 @@ spec:
         backend:
           service:
             name: splunk-mc-monitoring-console-service
-            port: 
+            port:
               number: 8000
   tls:
   - hosts:
@@ -168,40 +150,41 @@ spec:
     secretName: operator-tls
 EOF
 
-echo "✅ Ingress configuration file generated at $NGINX_CONFIG_FILE"
+      echo "✅ Ingress configuration file generated at $NGINX_CONFIG_FILE"
 
-            # Step 2: Apply ingress configuration
-            echo "Applying ingress-configuration.yaml..."
-            kubectl apply -f $NGINX_CONFIG_FILE
-            echo "✅ Ingress configuration applied successfully."
-            break
-            ;;
-        n )
-            DEPLOY_WEB_INGRESS=false
-            echo "Skipping nginx ingress deployment."
-            break
-            ;;
-        * )
-            echo "Please answer y or n."
-            ;;
-    esac
+      # Step 4: Apply ingress
+      kubectl apply -f "$NGINX_CONFIG_FILE"
+      echo "✅ Ingress configuration applied successfully."
+
+      break
+      ;;
+    n|no)
+      DEPLOY_WEB_INGRESS=false
+      echo "Skipping nginx ingress deployment."
+      break
+      ;;
+    *)
+      echo "Please answer y or n."
+      ;;
+  esac
 done
 
+# --------------------------------------------------
 # --- DEPLOY FEDERATION INGRESS (y/n) ---
+# --------------------------------------------------
 echo "----------------------------------------------"
 echo "Starting deployment of Federation Ingress"
 echo "----------------------------------------------"
-while true; do
-  echo "----------------------------------------------"
-  read -r -p "Do you want to deploy a Federation Ingress (Load Balancer)? (y/n): " deploy_FederationIngress
-  deploy_FederationIngress=${deploy_FederationIngress,,}   # normalize input to lowercase
 
-  case "$deploy_FederationIngress" in
-    y|yes)
-      DEPLOY_FEDERATION_INGRESS=true
-      echo "Starting deployment of the Federation ingress (Load Balancer) controller..."
+read -r -p "Do you want to deploy a Federation Ingress (Load Balancer)? (y/n): " deploy_FederationIngress
+deploy_FederationIngress=${deploy_FederationIngress,,}   # normalize input
 
-    cat > $LB_FILE <<EOF
+case "$deploy_FederationIngress" in
+  y|yes)
+    DEPLOY_FEDERATION_INGRESS=true
+    echo "Starting deployment of the Federation ingress (Load Balancer) controller..."
+
+    cat > "$LB_FILE" <<EOF
 apiVersion: v1
 kind: Service
 metadata:
@@ -209,11 +192,11 @@ metadata:
   namespace: splunk
   labels:
     azure.workload.identity/use: "true"
-  annotations: 
+  annotations:
     service.beta.kubernetes.io/azure-load-balancer-internal: "true"
 spec:
   type: LoadBalancer
-  loadBalancerIP: $LB_IP #update the IP address to your desired static IP within the subnet range
+  loadBalancerIP: $LB_IP
   selector:
     app.kubernetes.io/instance: splunk-sh-deployer
     app.kubernetes.io/component: search-head
@@ -232,18 +215,21 @@ spec:
   allocateLoadBalancerNodePorts: true
   internalTrafficPolicy: Cluster
 EOF
-    
+
     echo "✅ Custom federation ingress values file generated at $LB_FILE"
 
-    # Step 3: Apply federation ingress service
-    echo "Applying $LB_FILE..."
-    kubectl apply -f $LB_FILE
+    # Apply federation ingress
+    kubectl apply -f "$LB_FILE"
     echo "✅ Federation ingress service applied successfully."
-
-else
+    ;;
+  n|no)
     DEPLOY_FEDERATION_INGRESS=false
     echo "Skipping Federation ingress deployment."
-fi
+    ;;
+  *)
+    echo "Invalid input. Skipping Federation ingress deployment."
+    ;;
+esac
 
 echo "----------------------------------------------"
 echo "🎉 All steps completed successfully!"
