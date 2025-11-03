@@ -46,6 +46,24 @@ az network vnet create \
   --location $location
 ```
 
+## VSCode Tasks for Repo
+This repository includes several VSCode tasks to help streamline development and deployment workflows. These tasks are configured in the `.vscode/tasks.json` file and can be accessed through the Command Palette (`Ctrl+Shift+P` or `Cmd+Shift+P`) by typing "Tasks: Run Task".
+
+### Available Tasks
+
+#### Infrastructure Tasks
+- **Login to Azure Commercial** - Performs an az login against azure commercial.
+- **Login to Azure Government** - Performs an az login against azure government.
+- **Deploy Infrastructure** - Runs the `deploy_infra.sh` script to provision all required Azure resources including Resource Group, Key Vault, Storage Account, and User Assigned Managed Identity
+- **Deploy Splunk** - Runs a script to deploy the splunk components on the aks cluster.
+
+### Running Tasks
+To execute any task:
+1. Open the Command Palette (`Ctrl+Shift+P` or `Cmd+Shift+P`)
+2. Type "Tasks: Run Task"
+3. Select the desired task from the list
+4. Follow any prompts for required parameters
+
 ## Deploying with the Shared Services
 
 These tasks can be done either through cli, powershell or the portal.
