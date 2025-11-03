@@ -38,6 +38,7 @@ controller:
     type: LoadBalancer
     loadBalancerIP: "$WEB_IP"
     annotations:
+      azure.workload.identity/use: "true"
       service.beta.kubernetes.io/azure-load-balancer-internal: "true"
       service.beta.kubernetes.io/azure-load-balancer-ipv4: "$WEB_IP"
       service.beta.kubernetes.io/azure-load-balancer-internal-subnet: "$SUBNET_NAME"
@@ -59,12 +60,18 @@ EOF
         --namespace splunk \
         -f "$NGINX_VALUES_FILE"
 
-      #sleep 15
-      #echo "✅ waiting for nginx ingress controller service account."
+      echo "Waiting for nginx ingress controller service account..."
+      for i in {1..30}; do
+        if kubectl get sa splunk-nginx-nginx-ingress -n "$NAMESPACE" >/dev/null 2>&1; then
+          echo "✅ Service account found."
+          break
+        fi
+        echo "⏳ Waiting for service account to be created..."
+        sleep 5
+      done
 
-      #echo "adding label to service account"
-      #kubectl label sa splunk-nginx-nginx-ingress -n "$NAMESPACE" azure.workload.identity/use=true --overwrite
-      #echo "✅ nginx ingress controller SA label updated."
+      kubectl label sa splunk-nginx-nginx-ingress -n "$NAMESPACE" azure.workload.identity/use=true --overwrite
+      echo "✅ nginx ingress controller SA label updated."
 
       echo "Waiting for nginx ingress controller pods to be ready..."
       if kubectl rollout status deployment/splunk-nginx-nginx-ingress-controller -n splunk --timeout=180s; then
