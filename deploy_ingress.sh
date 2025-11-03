@@ -59,12 +59,12 @@ EOF
         --namespace splunk \
         -f "$NGINX_VALUES_FILE"
 
-      sleep 15
-      echo "✅ waiting for nginx ingress controller service account."
+      #sleep 15
+      #echo "✅ waiting for nginx ingress controller service account."
 
-      echo "adding label to service account"
-      kubectl label sa splunk-nginx-nginx-ingress -n "$NAMESPACE" azure.workload.identity/use=true --overwrite
-      echo "✅ nginx ingress controller SA label updated."
+      #echo "adding label to service account"
+      #kubectl label sa splunk-nginx-nginx-ingress -n "$NAMESPACE" azure.workload.identity/use=true --overwrite
+      #echo "✅ nginx ingress controller SA label updated."
 
       echo "Waiting for nginx ingress controller pods to be ready..."
       if kubectl rollout status deployment/splunk-nginx-nginx-ingress-controller -n splunk --timeout=180s; then
