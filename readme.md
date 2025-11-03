@@ -789,14 +789,7 @@ graph TB
     UAMI --> STORAGE
     UAMI --> KV
     KEY --> KV
-    
-    %% Styling
-    classDef existing fill:#e1f5fe,stroke:#01579b,stroke-width:2px
-    classDef networking fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
-    classDef compute fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px
-    classDef storage fill:#fff3e0,stroke:#e65100,stroke-width:2px
-    classDef security fill:#ffebee,stroke:#b71c1c,stroke-width:2px
-    
+      
     class VNET,UAMI,KV,KEY,STORAGE existing
     class NSG,RT,SUBNET,ACR_PE,DNS_ZONE,DNS_LINK,WIN_NIC,LIN_NIC networking
     class AKS,POOL1,POOL2,WIN_VM,LIN_VM compute
