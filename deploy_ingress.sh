@@ -10,6 +10,7 @@ LB_IP="10.0.28.14"
 SUBNET_NAME="pulse-aks-subnet"
 SUBNET_RG="networking-rg"
 FQDN="demo.com"
+NAMESPACE="splunk"
 
 NGINX_VALUES_FILE="$(pwd)/values-nginx-ingress.yaml"
 NGINX_CONFIG_FILE="$(pwd)/nginx-config.yaml"
@@ -57,7 +58,7 @@ EOF
       # Step 2: Install nginx ingress controller
       helm install splunk-nginx oci://ghcr.io/nginx/charts/nginx-ingress \
         --version 2.2.2 \
-        --namespace splunk \
+        --namespace "$NAMESPACE" \
         -f "$NGINX_VALUES_FILE"
 
       echo "Waiting for nginx ingress controller service account..."
@@ -74,11 +75,11 @@ EOF
       echo "✅ nginx ingress controller SA label updated."
 
       echo "Waiting for nginx ingress controller pods to be ready..."
-      if kubectl rollout status deployment/splunk-nginx-nginx-ingress-controller -n splunk --timeout=180s; then
+      if kubectl rollout status deployment/splunk-nginx-nginx-ingress-controller -n "$NAMESPACE" --timeout=180s; then
           echo "✅ nginx ingress controller rollout completed successfully."
       else
           echo "❌ nginx ingress controller failed to deploy or timed out."
-          kubectl get pods -n splunk -l app.kubernetes.io/name=nginx-ingress --no-headers
+          kubectl get pods -n "$NAMESPACE" -l app.kubernetes.io/name=nginx-ingress --no-headers
           exit 1
       fi
 
@@ -91,7 +92,7 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: splunk-web
-  namespace: splunk
+  namespace: $NAMESPACE
 spec:
   ingressClassName: nginx
   rules:
@@ -205,7 +206,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: splunk-lb
-  namespace: splunk
+  namespace: $NAMESPACE
   labels:
     azure.workload.identity/use: "true"
   annotations:
