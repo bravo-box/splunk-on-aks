@@ -1,0 +1,95 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Login to Azure Commercial",
+            "type": "shell",
+            "command": "az login --use-device-code",
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "problemMatcher": [],
+            "detail": "Logs into Azure Commercial using device code authentication"
+        },
+        {
+            "label": "Login to Azure Government",
+            "type": "shell",
+            "command": "az cloud set --name AzureUSGovernment ; az login --use-device-code",
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "problemMatcher": [],
+            "detail": "Logs into Azure Government using device code authentication"
+        },
+        {
+            "label": "Clean up Deployed Cluster",
+            "type": "shell",
+            "command": "./cleanup.sh",
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "problemMatcher": [],
+            "detail": "Execute the cleanup script to remove Azure resources"
+        },
+        {
+            "label": "Deploy Infrastructure",
+            "type": "shell",
+            "command": "./deploy_infra.sh",
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "problemMatcher": [],
+            "detail": "Deploy the infrastructure components"
+        },
+        {
+            "label": "Deploy Splunk",
+            "type": "shell",
+            "command": "./deploy_splunk_sok_aks_blog.sh",
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "problemMatcher": [],
+            "detail": "Deploy Splunk on AKS for the blog demo"
+        },
+        {
+            "label": "Run All Deployment Tasks",
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "Run deploy_infra.sh",
+                "Run deploy_splunk_sok_aks_blog.sh"
+            ],
+            "group": "build",
+            "detail": "Run infrastructure deployment followed by Splunk deployment"
+        }
+    ]
+}
