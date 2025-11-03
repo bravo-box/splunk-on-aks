@@ -14,6 +14,7 @@ FQDN="demo.com"
 
 NGINX_VALUES_FILE="$(pwd)/values-nginx-ingress.yaml" # Path to the custom values file
 NGINX_CONFIG_FILE="$(pwd)/nginx-config.yaml" # Path to the ingress configuration file
+LB_FILE="$(pwd)/federation-ingress.yaml" # Path to the federation ingress values file
 
 
 # Select which Ingress to deploy, Web Ingress, Federation Ingress, or both
@@ -170,25 +171,50 @@ if [[ "$deploy_FederationIngress" == "y" ]]; then
     DEPLOY_FEDERATION_INGRESS=true
     echo "Starting deployment of the Federation ingress (Load Balancer) controller..."
 
+    cat > $LB_FILE <<EOF
+apiVersion: v1
+kind: Service
+metadata:
+  name: splunk-lb
+  namespace: splunk
+  labels:
+    azure.workload.identity/use: "true"
+  annotations: 
+    service.beta.kubernetes.io/azure-load-balancer-internal: "true"
+spec:
+  type: LoadBalancer
+  loadBalancerIP: $LB_IP #update the IP address to your desired static IP within the subnet range
+  selector:
+    app.kubernetes.io/instance: splunk-sh-deployer
+    app.kubernetes.io/component: search-head
+    app.kubernetes.io/name: deployer
+    app.kubernetes.io/part-of: splunk-sh-search-head
+  ports:
+    - name: splunk-lb-port
+      protocol: TCP
+      port: 8089
+      targetPort: 8089
+  sessionAffinity: None
+  externalTrafficPolicy: Cluster
+  ipFamilies:
+    - IPv4
+  ipFamilyPolicy: SingleStack
+  allocateLoadBalancerNodePorts: true
+  internalTrafficPolicy: Cluster
+EOF
+    
+    echo "✅ Custom federation ingress values file generated at $LB_FILE"
+
     # Step 3: Apply federation ingress service
-    echo "Applying federation-ingress.yaml..."
-    kubectl apply -f ingress-controller/federation-ingress.yaml
+    echo "Applying $LB_FILE..."
+    kubectl apply -f $LB_FILE
+    echo "✅ Federation ingress service applied successfully."
 
-    echo "Waiting for Federation ingress service to be ready..."
-    if kubectl rollout status deployment/federation-ingress-controller -n splunk --timeout=180s; then
-        echo "✅ Federation ingress controller deployed successfully."
-    else
-        echo "❌ Federation ingress controller failed to deploy or timed out."
-        kubectl get pods -n splunk -l app=federation-ingress --no-headers
-        exit 1
-    fi
-
-elif [[ "$deploy_FederationIngress" == "n" ]]; then
+else
     DEPLOY_FEDERATION_INGRESS=false
     echo "Skipping Federation ingress deployment."
-else
-    echo "Invalid input. Please enter 'y' or 'n'."
-    exit 1
 fi
 
-echo "All steps completed."
+echo "----------------------------------------------"
+echo "🎉 All steps completed successfully!"
+echo "----------------------------------------------"
