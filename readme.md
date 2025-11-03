@@ -21,7 +21,32 @@ There are a few prerequisites that we are not building within the cluster, this 
 - Storage Account
 - User Assigned Managed Identity
 
-## Deploying the prerequisites
+## Required Pre-requisites
+The following are the required pre-requisites before running the deployment scripts.  These include the following:
+
+- A Landing Zone Virtual Network
+- EntraID Group for AKS Admins
+
+### Creating the Virtual Network
+For this template, it does require that a virtual network exist to be attached to, you can create the virtual network with the following azure CLI commands if a network doesn't exist:
+
+```bash
+rg="your-resource-group-name"
+location="usgovvirginia"  # or your preferred location
+vnet_name="your-vnet-name"
+subnet_name="default"
+address_space="10.0.0.0"
+
+az network vnet create \
+  --resource-group $rg \
+  --name $vnet_name \
+  --address-prefix "$address_space/16" \
+  --subnet-name $subnet_name \
+  --subnet-prefix "$address_space/24" \
+  --location $location
+```
+
+## Deploying with the Shared Services
 
 These tasks can be done either through cli, powershell or the portal.
 Througout this post will share the az cli commands that you can run to do the manual configs. We have also provided a full bash script that will build the entire infrastructure for you.
