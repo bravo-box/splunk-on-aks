@@ -5,11 +5,11 @@ set -e
 # --------------------------------------------------
 # Variables
 # --------------------------------------------------
-WEB_IP="10.0.28.13"
-LB_IP="10.0.28.14"
-SUBNET_NAME="pulse-aks-snet"
-SUBNET_RG="networking-rg"
-FQDN="demo.com"
+WEB_IP="x.x.x.x" # Internal IP for Web Ingress
+LB_IP="x.x.x.x" # Internal IP for Federation Ingress
+SUBNET_NAME="x" # Subnet name where the IPs are allocated
+SUBNET_RG="x" # Resource Group of the subnet
+FQDN="x.com" # Fully Qualified Domain Name for Splunk services
 NAMESPACE="splunk"
 
 NGINX_VALUES_FILE="$(pwd)/values-nginx-ingress.yaml"
