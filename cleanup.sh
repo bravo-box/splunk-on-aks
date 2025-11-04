@@ -27,14 +27,21 @@ if [[ ! "$proceed" =~ ^[Yy]$ ]]; then
 fi
 
 # Get the first Helm release name in 'splunk' namespace
-CHART_FULL=$(helm list -n splunk -o json | jq -r '.[0].name')
+CHARTS=$(helm list -n splunk -o json | jq -r '.[].name')
 
 # Uninstall Splunk-C3 Helm deployment
-echo "Uninstalling $CHART_FULL Helm deployment..."
-if helm uninstall "$CHART_FULL" -n splunk; then
-    HELM_UNINSTALLED=true
+if [[ -z "$CHARTS" ]]; then
+    echo "No Helm releases found in 'splunk' namespace."
 else
-    echo "$CHART_FULL Helm deployment not found, skipping uninstall."
+    for CHART_FULL in $CHARTS; do
+        echo "Uninstalling $CHART_FULL Helm deployment..."
+        if helm uninstall "$CHART_FULL" -n splunk; then
+            echo "$CHART_FULL successfully uninstalled."
+        else
+            echo "Failed to uninstall $CHART_FULL."
+        fi
+    done
+    HELM_UNINSTALLED=true
 fi
 
 # List CRDs containing 'splunk'
@@ -81,7 +88,7 @@ fi
 # -----------------------------
 echo
 echo "==== Cleanup Summary ===="
-echo "Helm release uninstalled:         $HELM_UNINSTALLED - $CHART_FULL"
+echo "Helm release uninstalled:         $HELM_UNINSTALLED - $CHARTS"
 echo "CRDs removed:                     $CRDS_REMOVED"
 echo "ConfigMaps removed:               $CONFIGMAPS_REMOVED"
 echo "PVCs removed:                     $PVCS_REMOVED"
