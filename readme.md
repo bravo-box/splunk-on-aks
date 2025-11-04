@@ -164,7 +164,7 @@ Contents for infra.parameter.json
 
 ```json
 {
-    "\$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
         "location": { 
@@ -324,7 +324,7 @@ kubectl cluster-info
 
 You may be prompted to login in. Once you have logged in, you will be presented with the default namespaces in the cluster.
 
-** The Windows jumpbox can be used as well, particularly for access to the portal. You can log into the azure portal and view the resources in your cluster. 
+** The Windows jumpbox can be used as well, particularly for access to the portal. You can log into the azure portal and view the resources in your cluster.
 
 Remember as this is a private cluster you cannot see the resources from the portal if you are connecting from a machine that outside of your network eg: a home machine that is not on VPN or if you are on a network that is not peered and routed correctly to the network in Azure.
 
@@ -370,7 +370,6 @@ chmod +x deploy_splunk_sok_aks.sh
 ```
 
 Once this completes you can check the status of you Splunk roll-out, proceed to the section in the document "Checking your Deployment"
-
 
 You should see the pods coming online, this will take around 30-45 minutes for all to be ready.
 
@@ -425,18 +424,7 @@ data:
   # Ensure your Splunk Operator CR (LicenseManager, Standalone) references this filename
   # in its 'licenseUrl' (e.g., /mnt/licenses/enterprise.lic).
   enterprise.lic: |
-    PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPGxpY2Vuc2U+CiAgPHNpZ25hdHVyZT5pTEZBZnVVZU5rK0dVVDNGbDFkTWttQjB3dEFvTHJqTy9wT1plR25nZDBMejNzb1dxblo2UlJkMSt4T0N2dlI0Zk9wd3Jk
-    allMemp2SnYxdWJuVXF1RzhMQ1JhR2N6WUswWnF1YytSU2RJVlVmZ1p1NW91d2N2d2VqaENhckRQem9kOFBMWlJUbDBOWHVSR2xRZjRCSmE3N0x0dy9wSnp0WmhYWUxtUUhwNUkxQWkrNjRLT2h5c0tLK212ZUthUVFqTjdPblpDRW1jTWdo
-    QnV3aVJCK0ZYTFBJaGMxQ3lzS282TDJKY0hMblNYTmRDbUlLVzVqTElRNWJoQzh6cHJObW1IaTVvMEF2bWE4enpBWm5IajN0Y1prTGRlU0lMdFdsdjI0eGliVGMrcFd1NnJ5Ri9mMTNzdnRZWjFuNlVpUHNqaHZvREJPUlZMTVJNTEp0djU4
-    REE9PTwvc2lnbmF0dXJlPgogIDxwYXlsb2FkPgogICAgPHR5cGU+ZW50ZXJwcmlzZTwvdHlwZT4KICAgIDxncm91cF9pZD5FbnRlcnByaXNlPC9ncm91cF9pZD4KICAgIDxxdW90YT4xMDczNzQxODI0MDwvcXVvdGE+CiAgICA8bWF4X3Zp
-    b2xhdGlvbnM+NTwvbWF4X3Zpb2xhdGlvbnM+CiAgICA8d2luZG93X3BlcmlvZD4zMDwvd2luZG93X3BlcmlvZD4KICAgIDxjcmVhdGlvbl90aW1lPjE3MzkxNzQ0MDA8L2NyZWF0aW9uX3RpbWU+CiAgICA8bGFiZWw+U3BsdW5rIERldmVs
-    b3BlciBQZXJzb25hbCBMaWNlbnNlIERPIE5PVCBESVNUUklCVVRFPC9sYWJlbD4KICAgIDxleHBpcmF0aW9uX3RpbWU+MTc1NDgwOTE5OTwvZXhwaXJhdGlvbl90aW1lPgogICAgPGZlYXR1cmVzPgogICAgICA8ZmVhdHVyZT5BdXRoPC9m
-    ZWF0dXJlPgogICAgICA8ZmVhdHVyZT5Gd2REYXRhPC9mZWF0dXJlPgogICAgICA8ZmVhdHVyZT5SY3ZEYXRhPC9mZWF0dXJlPgogICAgICA8ZmVhdHVyZT5Mb2NhbFNlYXJjaDwvZmVhdHVyZT4KICAgICAgPGZlYXR1cmU+RGlzdFNlYXJj
-    aDwvZmVhdHVyZT4KICAgICAgPGZlYXR1cmU+UmN2U2VhcmNoPC9mZWF0dXJlPgogICAgICA8ZmVhdHVyZT5TY2hlZHVsZWRTZWFyY2g8L2ZlYXR1cmU+CiAgICAgIDxmZWF0dXJlPkFsZXJ0aW5nPC9mZWF0dXJlPgogICAgICA8ZmVhdHVy
-    ZT5EZXBsb3lDbGllbnQ8L2ZlYXR1cmU+CiAgICAgIDxmZWF0dXJlPkRlcGxveVNlcnZlcjwvZmVhdHVyZT4KICAgICAgPGZlYXR1cmU+U3BsdW5rV2ViPC9mZWF0dXJlPgogICAgICA8ZmVhdHVyZT5TaWduaW5nUHJvY2Vzc29yPC9mZWF0
-    dXJlPgogICAgICA8ZmVhdHVyZT5TeXNsb2dPdXRwdXRQcm9jZXNzb3I8L2ZlYXR1cmU+CiAgICAgIDxmZWF0dXJlPkNhbkJlUmVtb3RlTWFzdGVyPC9mZWF0dXJlPgogICAgPC9mZWF0dXJlcz4KICAgIDxhZGRfb25zPgogICAgICA8YWRk
-    X29uIG5hbWU9Iml0c2kiIHR5cGU9ImFwcCI+CiAgICAgICAgPHBhcmFtZXRlciBrZXk9InNpemUiIHZhbHVlPSIxMCIvPgogICAgICA8L2FkZF9vbj4KICAgIDwvYWRkX29ucz4KICAgIDxzb3VyY2V0eXBlcy8+CiAgICA8Z3VpZD5DNDky
-    NTI5OC0xRjNFLTRGODMtQjVCNC1CNzM0QjRDMzUwMzU8L2d1aWQ+CiAgPC9wYXlsb2FkPgo8L2xpY2Vuc2U+Cg==
+    <enter your license here>
 
 ```
 
@@ -502,10 +490,30 @@ You should now have a fully running and operational Splunk instance inside AKS. 
 
 ### Automated deployment of ingress
 
-Coming Soon !
+The automated build will deploy 2 services. A web front end for Splunk administration and a load balancer for Federation purposes. During the deployment of the ingress script you can chose which services to deploy.
+
+There are a few variables that are required to run the deploy_ingress.sh
+
+WEB_IP - this is the internal IP that you want to use for the web administration
+LB_IP - this is the internal IP that you want to use for federation
+SUBNET_NAME - this is the subnet that your AKS cluster is attached to.
+SUBNET_RG - the name of the resource group for your vNet
+FQDN - the DNS name that you will be using for the administration of the Splunk environment
+NAMESPACE - the splunk deployment namespace. By default this is 'splunk'
+
+If you have not git cloned the repo, you can pull the file down to the local jumpbox
+
+NOTE: you will need to have certificates for the FQDN that you have defined:
+
+eg: splunk.demo.com
+If you chose to just use http and NOT https, you update the YAML in deploy_ingress.sh file to remove the TLS section and associated host names. This can also be completed post deployment through the Azure portal. On the ingress tab, select the splunk-web ingress and then go to YAML. Find the TLS section, delete, dry-run, apply and update the manifest.
 
 ```bash
-# edit the bash with you IPs and subnet
+curl -sLO https://raw.githubusercontent.com/bravo-box/splunk-on-aks/refs/heads/wm/deploy_ingress.sh
+
+bash deploy_ingress.sh
+
+# follow the prompts
 
 ```
 
@@ -567,23 +575,14 @@ spec:
 ```
 
 ```bash
-kubectl apply -f <file name>
+kubectl apply -f <file loadbalancer filename>
 ```
 
 Or you can copy the contents of the yaml above and in the Azure portal, create a yaml deployment.
 
 Secondly, lets create the nginx controller for web management.
 
-First you will need to ensure that the repo is local to the machine you are deploying from.
-
-```helm
-helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
-
-# Validate that you have the repo
-helm repo list
-```
-
-Now that you have the repo locally, we can proceed in configuring the ingress service. You will require another IP, this is for the traffic over 8000 so that you can do web management. You will also require the name of the subnet that you AKS Cluster is built in. Take the yaml below and create a helm values file that you can use for the helm deployment.
+We will need to create the nginx controller yaml file. Take the yaml below and create a helm values file that you can use for the helm deployment. Create a file called nginx.yaml
 
 ```yaml
 controller:
@@ -594,19 +593,26 @@ controller:
       service.beta.kubernetes.io/azure-load-balancer-internal: "true"
       service.beta.kubernetes.io/azure-load-balancer-ipv4: "<set IP>"
       service.beta.kubernetes.io/azure-load-balancer-internal-subnet: "<azure subnet>"
+      service.beta.kubernetes.io/azure-load-balancer-internal-subnet-resource-group: "<subnet resource group"
     externalTrafficPolicy: Local
     internalTrafficPolicy: Cluster
     allocateLoadBalancerNodePorts: true
   enableSnippets: true
+  ports:
+    http: 80
+    https: 443
 ```
+
+We will run the helm install from gchr.io
 
 ```helm
-helm install splunk-web ingress-nginx/ingress-nginx --version 4.13.3 --namespace splunk -f <values file>.yaml
-
-# values file was what you created in the step above
+helm install splunk-nginx oci://ghcr.io/nginx/charts/nginx-ingress \
+        --version 2.2.2 \
+        --namespace "splunk" \
+        -f "nginx.yaml"
 ```
 
-Now that we have the service created, will need to apply the routing rules. The below yaml file will create routing rules for the ingress. Ensure that you apply your fqdn to the values. Note for the TLS you will need to apply the certificates after the deployment for the connection.
+Now that we have the service created, will need to apply the routing rules. The below yaml file will create routing rules for the ingress. Ensure that you apply your fqdn to the values. Note for the TLS you will need to apply the certificates after the deployment for the connection. Create a new file called routing.yaml
 
 ```yaml
 apiVersion: networking.k8s.io/v1
@@ -634,17 +640,7 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: splunk-heavy-forwarder-standalone-service
-            port: 
-              number: 8000
-  - host: hf.splunk.<fqdn>
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: splunk-heavy-forwarder-standalone-service
+            name: splunk-hf-standalone-service
             port: 
               number: 8000
   - host: deployer.splunk.<fqdn>
@@ -698,3 +694,13 @@ spec:
     secretName: operator-tls
 
 ```
+
+Once you have created the yaml file, apply the config.
+
+```bash
+kubectl apply -f "routing.yaml"
+```
+
+To verify that everything is working from your jumpbox go to https://splunk.demo.com, you should see the Splunk admin login page.
+
+To clean everything up we have built a single script that you can run, cleanup.sh - this will uninstall all Helm installations, delete all CRDs, delete all PVCs and remove the splunk namespace.
