@@ -29,7 +29,7 @@ fi
 # Get the first Helm release name in 'splunk' namespace
 CHARTS=$(helm list -n splunk -o json | jq -r '.[].name')
 
-# Uninstall Splunk-C3 Helm deployment
+# Uninstall all Splunk Helm deployments
 if [[ -z "$CHARTS" ]]; then
     echo "No Helm releases found in 'splunk' namespace."
 else
