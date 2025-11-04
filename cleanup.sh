@@ -44,6 +44,8 @@ else
     HELM_UNINSTALLED=true
 fi
 
+CHARTS_FORMATTED=$(echo "$CHARTS" | tr '\n' '|' | sed 's/|$//; s/|/ | /g')
+
 # List CRDs containing 'splunk'
 CRDS=$(kubectl get crd -o name | grep splunk || true)
 if [[ -n "$CRDS" ]]; then
@@ -83,12 +85,14 @@ else
     echo "Namespace not found, skipping removal."
 fi
 
+
+
 # -----------------------------
 # Cleanup Summary
 # -----------------------------
 echo
 echo "==== Cleanup Summary ===="
-echo "Helm release uninstalled:         $HELM_UNINSTALLED - $CHARTS"
+echo "Helm release uninstalled:         $HELM_UNINSTALLED - $CHARTS_FORMATTED"
 echo "CRDs removed:                     $CRDS_REMOVED"
 echo "ConfigMaps removed:               $CONFIGMAPS_REMOVED"
 echo "PVCs removed:                     $PVCS_REMOVED"
