@@ -7,7 +7,7 @@ set -e
 # --------------------------------------------------
 WEB_IP="10.0.28.13"
 LB_IP="10.0.28.14"
-SUBNET_NAME="pulse-aks-subnet"
+SUBNET_NAME="pulse-aks-snet"
 SUBNET_RG="networking-rg"
 FQDN="demo.com"
 NAMESPACE="splunk"
@@ -38,6 +38,8 @@ controller:
   service:
     type: LoadBalancer
     loadBalancerIP: "$WEB_IP"
+    labels:
+      azure.workload.identity/use: "true"
     annotations:
       azure.workload.identity/use: "true"
       service.beta.kubernetes.io/azure-load-balancer-internal: "true"
