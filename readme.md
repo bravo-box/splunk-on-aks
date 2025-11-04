@@ -8,7 +8,7 @@ https://learn.microsoft.com/en-us/azure/architecture/reference-architectures/con
 
 If you are looking for Splunk Operator GitHub reference: https://github.com/splunk/splunk-operator/tree/main/docs
 
-This quickstart can be deployed either using the bash wrapper scripts for the Azure Infrastrucutre (deploy_infra.sh) and the Splunk deployment (deploy_splunk_sok_aks.sh). Or you can do a manual deployment which we have provided the various scripts below. Our recommended approach would be to use the bash scripts.
+This quickstart can be deployed either using the bash wrapper scripts for the Azure Infrastrucutre (```deploy_infra.sh```) and the Splunk deployment (```deploy_splunk_sok_aks.sh```) and the Ingress controllers (```deploy_ingress.sh```). Or you can do a manual deployment which we have provided the various scripts below. Our recommended approach would be to use the bash scripts.
 
 The jumpstart architecture we are building is comprised of:
 
