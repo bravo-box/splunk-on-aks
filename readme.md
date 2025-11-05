@@ -8,7 +8,7 @@ https://learn.microsoft.com/en-us/azure/architecture/reference-architectures/con
 
 If you are looking for Splunk Operator GitHub reference: https://github.com/splunk/splunk-operator/tree/main/docs
 
-This quickstart can be deployed either using the bash wrapper scripts for the Azure Infrastrucutre (deploy_infra.sh) and the Splunk deployment (deploy_splunk_sok_aks.sh). Or you can do a manual deployment which we have provided the various scripts below. Our recommended approach would be to use the bash scripts.
+This quickstart can be deployed either using the bash wrapper scripts for the Azure Infrastrucutre (```deploy_infra.sh```) and the Splunk deployment (```deploy_splunk_sok_aks.sh```) and the Ingress controllers (```deploy_ingress.sh```). Or you can do a manual deployment which we have provided the various scripts below. Our recommended approach would be to use the bash scripts.
 
 The jumpstart architecture we are building is comprised of:
 
@@ -77,22 +77,22 @@ chmod +x deploy_infra.sh
 
 You will be prompted for the following, you can chose not to deploy the RG, KV, Storage Account and UAMI. You will need to provide details of them and they will need to be in the same resource group.
 
-1. The cloud you are using, AzureCloud or AzureUSGovernment
-2. The location of the resources, use the name of the location not the display name. eg: westus or usgovvirginia. Note that this should be the same as the vNet that you are going to be building in.
+1. The cloud you are using, ```AzureCloud``` or ```AzureUSGovernment```
+2. The location of the resources, use the name of the location not the display name. eg: ```westus``` or ```usgovvirginia```. Note that this should be the same as the vNet that you are going to be building in.
 3. Resource Group for the KeyVault, Storage Account and UAMI
-4. KeyVault name - it will append a 10 digit random number to the end of the name eg: kv-test entered will become kv-testabc123de90
-5. Storage Account name - same as above, it will append the 10 digit random number. Note storage accounts can only accecpt alpah numeric, no special characters.
+4. KeyVault name - it will append a 10 digit random number to the end of the name eg: ```kv-test``` entered will become ```kv-testabc123de90```
+5. Storage Account name - same as above, it will append the 10 digit random number. Note storage accounts can only accecpt alpha numeric, no special characters.
 6. User Assigned Managed Identity (UAMI). You can chose to use an existing UAMI if you have one
 7. Project name - this is name that will be used to name all resources in this deployment. Should be greater than 5 characters and no spaces or special characters eg: alpha
 8. Existing vNet name (we will detect the resource group name and present the subnets and address space that are already in the vNet)
-9. Enter the IP address space for the cluster. By default this deployment will provision a /27. You only need to enter the x.x.x.x eg: 10.0.1.0.
+9. Enter the IP address space for the cluster. By default this deployment will provision a /27. You only need to enter the x.x.x.x eg: ```10.0.1.0```.
 10. Enter the username for your jumpboxes
 11. Enter the password for the jumboxes
 12. Group ID from Entra. This is a group that will be used to manage access to the AKS Cluster. You can get this from Entra ID
 13. Tag Cost Center, if you dont use press enter and it will assign n/a
 14. Tag Env, this is Dev, Test, Prod. If you dont use tags then enter to skip it will add n/a
 
-## Manual Deployment
+## Manual Deployment for the Infrastructure
 
 ### Creating the keyVault
 
@@ -165,7 +165,7 @@ az keyvault key create --vault-name <vault name> -n aks-cmk
 
 Now that you have all the prerequisites done. We are ready to deploy the infrastructure template.
 
-## AKS Deployment
+### AKS Deployment
 
 The ARM template provided will build all the infrastructure needed to standup the AKS infra, this includes the AKS cluster, Azure Container Registry, networking components and jumpboxes.
 It is important to note that this deployment is deployed as a private cluster. All resources are deployed to an existing vNet however we create a subnet in the vNet. The subnet created by default is a /27, should you need to make it bigger adjust the prefix in the ARM template (row 491). Ensure that the prefix that you use in the parameter file can support the address space if you change it. The jumpboxes are deployed into the subnet you define.
@@ -174,15 +174,17 @@ Before you deploy verify all the details in the parameter file, you will need to
 
 You can get your public IP for the ACR firewall rule here, you can place this in the parameter file for the infrastructure deployment.
 
+You can adjust the node pool sizes in the ```infra.json``` ARM template, rows 610 and 635
+
 ```bash
 curl -s https://ifconfig.me | awk '{print $1}')
 ```
 
-Contents for infra.parameter.json
+Contents for ```infra.parameter.json```
 
 ```json
 {
-    "\$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
         "location": { 
@@ -260,7 +262,7 @@ Contents for infra.parameter.json
 }
 ```
 
-Once you have captured / updated all the parameters in the infra.parameters.json file you can run the deployment.
+Once you have captured / updated all the parameters in the ```infra.parameters.json``` file you can run the deployment.
 
 ** Note that this deployment is a subscription deployment not a resource group deployment
 
@@ -299,6 +301,20 @@ This will setup the following resources on your jumpbox
 - Git CLI
 - Helm
 
+Clone the SPLUNK-ON-AKS repo
+
+```bash
+mkdir git
+
+git clone https://github.com/bravo-box/splunk-on-aks.git
+
+cd git/splunk-on-aks
+
+ls -l
+```
+
+You should see all the files needed for further deployment.
+
 Once the tools are run do an Azure Login to ensure that you are have access to your environment
 
 ```bash
@@ -318,7 +334,7 @@ az aks get-credentials -n $cn -g $rg
 ```
 
 Should see a message that your cluster details have been merged into your kubeconfig file.
-It should also show the following: convert-kubeconfig -l azurecli
+It should also show the following, ```convert-kubeconfig -l azurecli```
 
 If not, we will need to ensure that kubelogin is configured correctly. We do this by running the kubelogin command to activate via Az CLI.
 
@@ -342,7 +358,7 @@ kubectl cluster-info
 
 You may be prompted to login in. Once you have logged in, you will be presented with the default namespaces in the cluster.
 
-** The Windows jumpbox can be used as well, particularly for access to the portal. You can log into the azure portal and view the resources in your cluster. 
+** The Windows jumpbox can be used as well, particularly for access to the portal. You can log into the azure portal and view the resources in your cluster.
 
 Remember as this is a private cluster you cannot see the resources from the portal if you are connecting from a machine that outside of your network eg: a home machine that is not on VPN or if you are on a network that is not peered and routed correctly to the network in Azure.
 
@@ -358,7 +374,7 @@ git clone https://github.com/bravo-box/splunk-on-aks.git
 
 Run these steps from the Linux jumpbox
 
-If you had run the deploy_infra.sh it would have pulled the repo locally to your Azure Container Registry, from here you can make the following ammendments to the deploy_splunk_sok_aks.sh file.
+If you had run the ```deploy_infra.sh``` it would have pulled the repo locally to your Azure Container Registry, from here you can make the following ammendments to the ```deploy_splunk_sok_aks.sh``` file.
 
 This bash will do a few things:
 
@@ -369,7 +385,7 @@ This bash will do a few things:
 5. Build the Splunk-License ConfigMap which is required for all other services to come online
 6. Add Helm repo and install the chart
 
-To prepare for the run update the following rows in the deploy_splunk_sok_aks.sh to reflect the resources in your Azure environment. NOTE: do not remove the preceding -, just replace the x with your values.
+To prepare for the run update the following rows in the ```deploy_splunk_sok_aks.sh``` to reflect the resources in your Azure environment. NOTE: do not remove the preceding -, just replace the x with your values.
 
 - 55 - Resource Group of the Cluster
 - 56 - AKS Cluster Name
@@ -389,7 +405,6 @@ chmod +x deploy_splunk_sok_aks.sh
 
 Once this completes you can check the status of you Splunk roll-out, proceed to the section in the document "Checking your Deployment"
 
-
 You should see the pods coming online, this will take around 30-45 minutes for all to be ready.
 
 ### Manual Deployment Splunk-C3
@@ -404,7 +419,7 @@ nano ns.yaml
 kind: Namespace
 apiVersion: v1
 metadata:
-  name: busybox
+  name: splunk
 ---
 
 # exit and save the file
@@ -445,9 +460,11 @@ data:
   # Ensure your Splunk Operator CR (LicenseManager, Standalone) references this filename
   # in its 'licenseUrl' (e.g., /mnt/licenses/enterprise.lic).
   enterprise.lic: |
-    << BASE64 LICENSE KEY Should be copied here.>>
+    <enter your license here>
 
 ```
+
+Note: you can run the deployment and add the license after the deployment.
 
 ### Apply the license file
 
@@ -511,10 +528,27 @@ You should now have a fully running and operational Splunk instance inside AKS. 
 
 ### Automated deployment of ingress
 
-The automated bash file will be here.
+The automated build will deploy 2 services. A web front-end for Splunk administration and a load balancer for federation purposes. During the deployment of the ingress script you can chose which services to deploy.
+
+There are a few variables that are required to run the ```deploy_ingress.sh```.
+
+- `WEB_IP` - this is the internal IP that you want to use for the web administration.
+- `LB_IP` - this is the internal IP that you want to use for federation.
+- `SUBNET_NAME` - this is the subnet that your AKS cluster is attached to.
+- `SUBNET_RG` - the name of the resource group for your vNet.
+- `FQDN` - the DNS name that you will be using for the administration of the Splunk environment.
+- `NAMESPACE` - the splunk deployment namespace. By default this is 'splunk'.
+
+NOTE: you will need to have certificates for the FQDN that you have defined: eg: splunk.demo.com
+
+If you chose to just use http and NOT https, you update the YAML in deploy_ingress.sh file to remove the TLS section and associated host names. This can also be completed post deployment through the Azure portal. On the ingress tab, select the splunk-web ingress and then go to YAML. Find the TLS section, delete, dry-run, apply and update the manifest.
 
 ```bash
-# edit the bash with you IPs and subnet
+curl -sLO https://raw.githubusercontent.com/bravo-box/splunk-on-aks/refs/heads/main/deploy_ingress.sh
+
+bash deploy_ingress.sh
+
+# follow the prompts
 
 ```
 
@@ -576,23 +610,14 @@ spec:
 ```
 
 ```bash
-kubectl apply -f <file name>
+kubectl apply -f <file loadbalancer filename>
 ```
 
 Or you can copy the contents of the yaml above and in the Azure portal, create a yaml deployment.
 
 Secondly, lets create the nginx controller for web management.
 
-First you will need to ensure that the repo is local to the machine you are deploying from.
-
-```helm
-helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
-
-# Validate that you have the repo
-helm repo list
-```
-
-Now that you have the repo locally, we can proceed in configuring the ingress service. You will require another IP, this is for the traffic over 8000 so that you can do web management. You will also require the name of the subnet that you AKS Cluster is built in. Take the yaml below and create a helm values file that you can use for the helm deployment.
+We will need to create the nginx controller yaml file. Take the yaml below and create a helm values file that you can use for the helm deployment. Create a file called nginx.yaml
 
 ```yaml
 controller:
@@ -603,19 +628,26 @@ controller:
       service.beta.kubernetes.io/azure-load-balancer-internal: "true"
       service.beta.kubernetes.io/azure-load-balancer-ipv4: "<set IP>"
       service.beta.kubernetes.io/azure-load-balancer-internal-subnet: "<azure subnet>"
+      service.beta.kubernetes.io/azure-load-balancer-internal-subnet-resource-group: "<subnet resource group"
     externalTrafficPolicy: Local
     internalTrafficPolicy: Cluster
     allocateLoadBalancerNodePorts: true
   enableSnippets: true
+  ports:
+    http: 80
+    https: 443
 ```
+
+We will run the helm install from gchr.io
 
 ```helm
-helm install splunk-web ingress-nginx/ingress-nginx --version 4.13.3 --namespace splunk -f <values file>.yaml
-
-# values file was what you created in the step above
+helm install splunk-nginx oci://ghcr.io/nginx/charts/nginx-ingress \
+        --version 2.2.2 \
+        --namespace "splunk" \
+        -f "nginx.yaml"
 ```
 
-Now that we have the service created, will need to apply the routing rules. The below yaml file will create routing rules for the ingress. Ensure that you apply your fqdn to the values. Note for the TLS you will need to apply the certificates after the deployment for the connection.
+Now that we have the service created, will need to apply the routing rules. The below yaml file will create routing rules for the ingress. Ensure that you apply your fqdn to the values. Note for the TLS you will need to apply the certificates after the deployment for the connection. Create a new file called routing.yaml
 
 ```yaml
 apiVersion: networking.k8s.io/v1
@@ -643,17 +675,7 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: splunk-heavy-forwarder-standalone-service
-            port: 
-              number: 8000
-  - host: hf.splunk.<fqdn>
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: splunk-heavy-forwarder-standalone-service
+            name: splunk-hf-standalone-service
             port: 
               number: 8000
   - host: deployer.splunk.<fqdn>
@@ -707,3 +729,13 @@ spec:
     secretName: operator-tls
 
 ```
+
+Once you have created the yaml file, apply the config.
+
+```bash
+kubectl apply -f "routing.yaml"
+```
+
+To verify that everything is working from your jumpbox go to https://splunk.demo.com, you should see the Splunk admin login page.
+
+To clean everything up we have built a single script that you can run, cleanup.sh - this will uninstall all Helm installations, delete all CRDs, delete all PVCs and remove the splunk namespace.

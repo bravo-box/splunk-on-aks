@@ -529,6 +529,7 @@ echo "----------------------------------------------"
 # Assign Network Contributor role to UAMI for AKS Ingress deployments
 echo "Assigning network role to the UAMI for AKS Ingress deployments..."
     # --- NETWORK ROLE ---
+
     # Get subnet ID
     SUBNET_ID=$(az network vnet subnet show \
     -g "$existingVnetResourceGroup" \
@@ -543,7 +544,7 @@ echo "Assigning network role to the UAMI for AKS Ingress deployments..."
     --scope "$SUBNET_ID"
 
     echo "----------------------------------------------"
-    echo "  ✅ Assigned 'Network Contributor' on $PROJECT_NAME-aks-snet"
+    echo "  ✅ Assigned 'Network Contributor' roles on $PROJECT_NAME-aks-snet"
     echo "----------------------------------------------"
 
 # Assign ACR Pull role to UAMI for AKS ACR access
