@@ -22,6 +22,8 @@ The jumpstart architecture we are building is comprised of:
 - Storage Account for the cluster and Splunk Apps
 - User Assigned Managed Identity for cluster operations
 
+**There is an architectural diagram of the deployed solution found [here](./docs/architecture.md).**
+
 ## Assumptions
 
 It is assumed that there is a vNet already in place and that you have an Azure Bastion service already enabled for connectivity to the jumbox VMs. If these are not present, you will need to create before proceeding.
@@ -46,8 +48,24 @@ az network bastion create \
 
 ## Automated Deployment for the Infrastructure (Recommended)
 
-These tasks can be done either through cli, powershell or the portal.
-Througout this post will share the az cli commands that you can run to do the manual configs. We have also provided a full bash script that will build the entire infrastructure for you.
+These tasks can be done either through cli, powershell, vscode task or the portal.
+
+### Available Tasks
+
+#### Infrastructure Tasks
+- **Login to Azure Commercial** - Performs an az login against azure commercial.
+- **Login to Azure Government** - Performs an az login against azure government.
+- **Deploy Infrastructure** - Runs the `deploy_infra.sh` script to provision all required Azure resources including Resource Group, Key Vault, Storage Account, and User Assigned Managed Identity
+- **Deploy Splunk** - Runs a script to deploy the splunk components on the aks cluster.
+
+### Running Tasks
+To execute any task:
+1. Open the Command Palette (`Ctrl+Shift+P` or `Cmd+Shift+P`)
+2. Type "Tasks: Run Task"
+3. Select the desired task from the list
+4. Follow any prompts for required parameters
+
+Throughout this readme, the az cli commands that you can run to do the manual configs. We have also provided a full bash script that will build the entire infrastructure for you.
 
 The deploy_infra.sh can create a Resource Group for the prerequisites, Key Vault, Storage Account and User Assigned Managed Identity (UAMI). The bash script will also assign the necessary roles to the UAMI. Once the prereqs are complete the bash script will build the parameter file and deploy the ARM template (infra.json).
 Should you decide to use the bash file (recommended approach):
@@ -410,6 +428,8 @@ kubectl apply -f https://github.com/splunk/splunk-operator/releases/download/3.0
 
 ### Create the license manager file
 
+**NOTE:  You will need a license key from Splunk to enable this deployment.**
+
 ```bash
 nano license.yaml
 
@@ -425,18 +445,7 @@ data:
   # Ensure your Splunk Operator CR (LicenseManager, Standalone) references this filename
   # in its 'licenseUrl' (e.g., /mnt/licenses/enterprise.lic).
   enterprise.lic: |
-    PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPGxpY2Vuc2U+CiAgPHNpZ25hdHVyZT5pTEZBZnVVZU5rK0dVVDNGbDFkTWttQjB3dEFvTHJqTy9wT1plR25nZDBMejNzb1dxblo2UlJkMSt4T0N2dlI0Zk9wd3Jk
-    allMemp2SnYxdWJuVXF1RzhMQ1JhR2N6WUswWnF1YytSU2RJVlVmZ1p1NW91d2N2d2VqaENhckRQem9kOFBMWlJUbDBOWHVSR2xRZjRCSmE3N0x0dy9wSnp0WmhYWUxtUUhwNUkxQWkrNjRLT2h5c0tLK212ZUthUVFqTjdPblpDRW1jTWdo
-    QnV3aVJCK0ZYTFBJaGMxQ3lzS282TDJKY0hMblNYTmRDbUlLVzVqTElRNWJoQzh6cHJObW1IaTVvMEF2bWE4enpBWm5IajN0Y1prTGRlU0lMdFdsdjI0eGliVGMrcFd1NnJ5Ri9mMTNzdnRZWjFuNlVpUHNqaHZvREJPUlZMTVJNTEp0djU4
-    REE9PTwvc2lnbmF0dXJlPgogIDxwYXlsb2FkPgogICAgPHR5cGU+ZW50ZXJwcmlzZTwvdHlwZT4KICAgIDxncm91cF9pZD5FbnRlcnByaXNlPC9ncm91cF9pZD4KICAgIDxxdW90YT4xMDczNzQxODI0MDwvcXVvdGE+CiAgICA8bWF4X3Zp
-    b2xhdGlvbnM+NTwvbWF4X3Zpb2xhdGlvbnM+CiAgICA8d2luZG93X3BlcmlvZD4zMDwvd2luZG93X3BlcmlvZD4KICAgIDxjcmVhdGlvbl90aW1lPjE3MzkxNzQ0MDA8L2NyZWF0aW9uX3RpbWU+CiAgICA8bGFiZWw+U3BsdW5rIERldmVs
-    b3BlciBQZXJzb25hbCBMaWNlbnNlIERPIE5PVCBESVNUUklCVVRFPC9sYWJlbD4KICAgIDxleHBpcmF0aW9uX3RpbWU+MTc1NDgwOTE5OTwvZXhwaXJhdGlvbl90aW1lPgogICAgPGZlYXR1cmVzPgogICAgICA8ZmVhdHVyZT5BdXRoPC9m
-    ZWF0dXJlPgogICAgICA8ZmVhdHVyZT5Gd2REYXRhPC9mZWF0dXJlPgogICAgICA8ZmVhdHVyZT5SY3ZEYXRhPC9mZWF0dXJlPgogICAgICA8ZmVhdHVyZT5Mb2NhbFNlYXJjaDwvZmVhdHVyZT4KICAgICAgPGZlYXR1cmU+RGlzdFNlYXJj
-    aDwvZmVhdHVyZT4KICAgICAgPGZlYXR1cmU+UmN2U2VhcmNoPC9mZWF0dXJlPgogICAgICA8ZmVhdHVyZT5TY2hlZHVsZWRTZWFyY2g8L2ZlYXR1cmU+CiAgICAgIDxmZWF0dXJlPkFsZXJ0aW5nPC9mZWF0dXJlPgogICAgICA8ZmVhdHVy
-    ZT5EZXBsb3lDbGllbnQ8L2ZlYXR1cmU+CiAgICAgIDxmZWF0dXJlPkRlcGxveVNlcnZlcjwvZmVhdHVyZT4KICAgICAgPGZlYXR1cmU+U3BsdW5rV2ViPC9mZWF0dXJlPgogICAgICA8ZmVhdHVyZT5TaWduaW5nUHJvY2Vzc29yPC9mZWF0
-    dXJlPgogICAgICA8ZmVhdHVyZT5TeXNsb2dPdXRwdXRQcm9jZXNzb3I8L2ZlYXR1cmU+CiAgICAgIDxmZWF0dXJlPkNhbkJlUmVtb3RlTWFzdGVyPC9mZWF0dXJlPgogICAgPC9mZWF0dXJlcz4KICAgIDxhZGRfb25zPgogICAgICA8YWRk
-    X29uIG5hbWU9Iml0c2kiIHR5cGU9ImFwcCI+CiAgICAgICAgPHBhcmFtZXRlciBrZXk9InNpemUiIHZhbHVlPSIxMCIvPgogICAgICA8L2FkZF9vbj4KICAgIDwvYWRkX29ucz4KICAgIDxzb3VyY2V0eXBlcy8+CiAgICA8Z3VpZD5DNDky
-    NTI5OC0xRjNFLTRGODMtQjVCNC1CNzM0QjRDMzUwMzU8L2d1aWQ+CiAgPC9wYXlsb2FkPgo8L2xpY2Vuc2U+Cg==
+    << BASE64 LICENSE KEY Should be copied here.>>
 
 ```
 

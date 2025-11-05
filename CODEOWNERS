@@ -1,0 +1,11 @@
+# Global code owners
+# These users will be requested for review when anyone opens a pull request.
+* @KevinDMack @wayneme75
+
+# Infrastructure files
+*.json @KevinDMack @wayneme75
+*.sh @KevinDMack @wayneme75
+
+# Documentation
+*.md @KevinDMack @wayneme75
+docs/ @KevinDMack @wayneme75

@@ -1,0 +1,26 @@
+{
+    "name": "Ubuntu",
+    "image": "mcr.microsoft.com/devcontainers/base:jammy",
+    "settings": {
+        "terminal.integrated.shell.linux": "/bin/bash"
+    },
+    "extensions": [
+        "ms-azuretools.vscode-azurecli",
+        "ms-azuretools.vscode-azure-account",
+        "ms-azuretools.vscode-azurerm-vscode-tools"
+    ],
+    "mounts": [
+        "source=${env:HOME}/.gitconfig,target=/root/.gitconfig,type=bind,consistency=cached"
+    ],
+    "forwardPorts": [],
+    "postCreateCommand": "git config --global --add safe.directory /workspaces/splunk-on-aks",
+    "features": {
+        "ghcr.io/devcontainers/features/azure-cli:1": {},
+        "ghcr.io/devcontainers-extra/features/devcontainers-cli:1": {},
+        "ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {
+            "version": "latest",
+            "helm": "latest",
+            "minikube": "none"
+        }
+    }
+}
