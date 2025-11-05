@@ -63,7 +63,7 @@ You will be prompted for the following, you can chose not to deploy the RG, KV, 
 2. The location of the resources, use the name of the location not the display name. eg: ```westus``` or ```usgovvirginia```. Note that this should be the same as the vNet that you are going to be building in.
 3. Resource Group for the KeyVault, Storage Account and UAMI
 4. KeyVault name - it will append a 10 digit random number to the end of the name eg: ```kv-test``` entered will become ```kv-testabc123de90```
-5. Storage Account name - same as above, it will append the 10 digit random number. Note storage accounts can only accecpt alpah numeric, no special characters.
+5. Storage Account name - same as above, it will append the 10 digit random number. Note storage accounts can only accecpt alpha numeric, no special characters.
 6. User Assigned Managed Identity (UAMI). You can chose to use an existing UAMI if you have one
 7. Project name - this is name that will be used to name all resources in this deployment. Should be greater than 5 characters and no spaces or special characters eg: alpha
 8. Existing vNet name (we will detect the resource group name and present the subnets and address space that are already in the vNet)
