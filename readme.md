@@ -28,7 +28,7 @@ It is assumed that there is a vNet already in place and that you have an Azure B
 
 Here is a simple example if you dont have a vNet or Bastion as yet.
 
-```json
+```bash
 az network vnet create \
     --resource-group <resource-group-name> \
     --name <vnet-name> \
