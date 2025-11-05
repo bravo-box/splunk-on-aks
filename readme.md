@@ -22,6 +22,8 @@ The jumpstart architecture we are building is comprised of:
 - Storage Account for the cluster and Splunk Apps
 - User Assigned Managed Identity for cluster operations
 
+**There is an architectural diagram of the deployed solution found [here](./docs/architecture.md).**
+
 ## Assumptions
 
 It is assumed that there is a vNet already in place and that you have an Azure Bastion service already enabled for connectivity to the jumbox VMs. If these are not present, you will need to create before proceeding.
@@ -46,8 +48,24 @@ az network bastion create \
 
 ## Automated Deployment for the Infrastructure (Recommended)
 
-These tasks can be done either through cli, powershell or the portal.
-Througout this post will share the az cli commands that you can run to do the manual configs. We have also provided a full bash script that will build the entire infrastructure for you.
+These tasks can be done either through cli, powershell, vscode task or the portal.
+
+### Available Tasks
+
+#### Infrastructure Tasks
+- **Login to Azure Commercial** - Performs an az login against azure commercial.
+- **Login to Azure Government** - Performs an az login against azure government.
+- **Deploy Infrastructure** - Runs the `deploy_infra.sh` script to provision all required Azure resources including Resource Group, Key Vault, Storage Account, and User Assigned Managed Identity
+- **Deploy Splunk** - Runs a script to deploy the splunk components on the aks cluster.
+
+### Running Tasks
+To execute any task:
+1. Open the Command Palette (`Ctrl+Shift+P` or `Cmd+Shift+P`)
+2. Type "Tasks: Run Task"
+3. Select the desired task from the list
+4. Follow any prompts for required parameters
+
+Throughout this readme, the az cli commands that you can run to do the manual configs. We have also provided a full bash script that will build the entire infrastructure for you.
 
 The deploy_infra.sh can create a Resource Group for the prerequisites, Key Vault, Storage Account and User Assigned Managed Identity (UAMI). The bash script will also assign the necessary roles to the UAMI. Once the prereqs are complete the bash script will build the parameter file and deploy the ARM template (infra.json).
 Should you decide to use the bash file (recommended approach):
@@ -424,6 +442,8 @@ kubectl apply -f https://github.com/splunk/splunk-operator/releases/download/3.0
 ```
 
 ### Create the license manager file
+
+**NOTE:  You will need a license key from Splunk to enable this deployment.**
 
 ```bash
 nano license.yaml
